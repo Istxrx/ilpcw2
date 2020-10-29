@@ -1,13 +1,63 @@
 package uk.ac.ed.inf.aqmaps;
 
-/**
- * Hello world!
- *
- */
-public class App 
-{
-    public static void main( String[] args )
-    {
-        System.out.println( "Hate the World!" );
+import java.math.BigDecimal;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse.BodyHandlers;
+import java.util.ArrayList;
+
+import com.mapbox.geojson.*;
+
+public class App {
+    
+    //Constant bounds for values of latitudes and longitudes with respect to cardinal directions
+    private static final BigDecimal BOUND_LATITUDE_NORTH = new BigDecimal("55.946233");
+    private static final BigDecimal BOUND_LATITUDE_SOUTH = new BigDecimal("55.942617");
+    private static final BigDecimal BOUND_LONGITUDE_EAST = new BigDecimal("-3.184319");
+    private static final BigDecimal BOUND_LONGITUDE_WEST = new BigDecimal("-3.192473");
+    
+    private static String readStringFromURL(String url) {
+        
+     // Create a new HttpClient with default settings.
+        var client = HttpClient.newHttpClient();
+        
+        // HttpClient assumes that it is a GET request by default.
+        var request = HttpRequest.newBuilder().uri(URI.create(url)).build();
+        
+        try {
+            // The response object is of class HttpResponse<String>
+            var response = client.send(request, BodyHandlers.ofString());
+            System.out.println(response.statusCode());
+            return(response.body());
+            
+        } catch (Exception e) {
+            System.out.println("Fatal error: Unable to connect to " + url + ".");
+            System.exit(1);
+        }
+        
+        return null;
+    }
+    
+    private static ArrayList<Polygon> loadNoFlyZonesFromURL(String url) {
+        
+        var geoJsonString = readStringFromURL(url);
+        var featureCollection = FeatureCollection.fromJson(geoJsonString);
+        var features = featureCollection.features();
+        var polygons = new ArrayList<Polygon>();
+        
+        for (var feature : features) {
+            var geometry = feature.geometry();
+            polygons.add((Polygon) geometry);
+        }
+        
+        return polygons;
+    }
+    
+    public static void main(String[] args) {
+        // "http://localhost:80/buildings/no-fly-zones.geojson"
+        //System.out.println(readStringFromURL("http://localhost:80/buildings/no-fly-zones.geojson"));
+        var nfz = loadNoFlyZonesFromURL("http://localhost:80/buildings/no-fly-zones.geojson");
+        System.out.println(nfz.get(0).toString());
     }
 }
