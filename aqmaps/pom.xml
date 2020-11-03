@@ -59,7 +59,7 @@
 					<release>11</release>
 					<showWarnings>true</showWarnings>
 					<compilerArgs>
-						<arg>−Xlint:all,−classfile</arg>
+						<arg>-Xlint:all,-classfile</arg>
 					</compilerArgs>
 				</configuration>
 			</plugin>
