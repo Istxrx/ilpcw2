@@ -6,8 +6,13 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.ArrayList;
+import java.lang.reflect.Type;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.Polygon;
 
-import com.mapbox.geojson.*;
+
 
 public class App {
     
@@ -19,7 +24,7 @@ public class App {
     
     private static String readStringFromURL(String url) {
         
-     // Create a new HttpClient with default settings.
+        // Create a new HttpClient with default settings.
         var client = HttpClient.newHttpClient();
         
         // HttpClient assumes that it is a GET request by default.
@@ -37,6 +42,15 @@ public class App {
         }
         
         return null;
+    }
+    
+    private static ArrayList<AirQualitySensor> loadAirQualitySensorsFromURL(String url) {
+        
+        var jsonString = readStringFromURL(url);
+        Type listType = new TypeToken<ArrayList<AirQualitySensor>>(){}.getType();
+        ArrayList<AirQualitySensor> sensors = new Gson().fromJson(jsonString, listType);
+        
+        return sensors;
     }
     
     private static ArrayList<Polygon> loadNoFlyZonesFromURL(String url) {
@@ -59,5 +73,8 @@ public class App {
         //System.out.println(readStringFromURL("http://localhost:80/buildings/no-fly-zones.geojson"));
         var nfz = loadNoFlyZonesFromURL("http://localhost:80/buildings/no-fly-zones.geojson");
         System.out.println(nfz.get(0).toString());
+        
+        var aqsensors = loadAirQualitySensorsFromURL("http://localhost:80/maps/2020/01/01/air-quality-data.json");
+        System.out.println(aqsensors.get(9).toString());
     }
 }
