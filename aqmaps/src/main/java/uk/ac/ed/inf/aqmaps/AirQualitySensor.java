@@ -8,8 +8,18 @@ public class AirQualitySensor {
     
     @Override
     public String toString() {
-        return(location + " " + battery + " " + reading);
+        return(this.location + " " + this.battery + " " + this.reading);
     }
-    
-    
+
+    public String getLocation() {
+        return this.location;
+    }
+
+    public double getBattery() {
+        return this.battery;
+    }
+
+    public double getReading() {
+        return this.reading;
+    }
 }

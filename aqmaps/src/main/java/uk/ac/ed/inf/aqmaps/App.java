@@ -68,6 +68,14 @@ public class App {
         return polygons;
     }
     
+    public static What3Words loadWhat3WordsFromUrl(String url) {
+        
+        var jsonString = readStringFromURL(url);
+        var what3words = new Gson().fromJson(jsonString, What3Words.class);
+        
+        return what3words;
+    }
+    
     public static void main(String[] args) {
         // "http://localhost:80/buildings/no-fly-zones.geojson"
         //System.out.println(readStringFromURL("http://localhost:80/buildings/no-fly-zones.geojson"));
@@ -76,5 +84,9 @@ public class App {
         
         var aqsensors = loadAirQualitySensorsFromURL("http://localhost:80/maps/2020/01/01/air-quality-data.json");
         System.out.println(aqsensors.get(9).toString());
+        
+        var w3w = loadWhat3WordsFromUrl("http://localhost:80/words/agents/mile/crib/details.json");
+        System.out.println(w3w.toString());
+       
     }
 }
