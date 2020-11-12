@@ -22,7 +22,7 @@ public class App {
     private static final BigDecimal BOUND_LONGITUDE_EAST = new BigDecimal("-3.184319");
     private static final BigDecimal BOUND_LONGITUDE_WEST = new BigDecimal("-3.192473");
     
-    private static String readStringFromURL(String url) {
+    public static String readStringFromURL(String url) {
         
         // Create a new HttpClient with default settings.
         var client = HttpClient.newHttpClient();
@@ -43,16 +43,7 @@ public class App {
         
         return null;
     }
-    
-    private static ArrayList<AirQualitySensor> loadAirQualitySensorsFromURL(String url) {
-        
-        var jsonString = readStringFromURL(url);
-        Type listType = new TypeToken<ArrayList<AirQualitySensor>>(){}.getType();
-        ArrayList<AirQualitySensor> sensors = new Gson().fromJson(jsonString, listType);
-        
-        return sensors;
-    }
-    
+   
     private static ArrayList<Polygon> loadNoFlyZonesFromURL(String url) {
         
         var geoJsonString = readStringFromURL(url);
@@ -67,25 +58,17 @@ public class App {
         
         return polygons;
     }
-    
-    public static What3Words loadWhat3WordsFromUrl(String url) {
-        
-        var jsonString = readStringFromURL(url);
-        var what3words = new Gson().fromJson(jsonString, What3Words.class);
-        
-        return what3words;
-    }
-    
+       
     public static void main(String[] args) {
         // "http://localhost:80/buildings/no-fly-zones.geojson"
         //System.out.println(readStringFromURL("http://localhost:80/buildings/no-fly-zones.geojson"));
         var nfz = loadNoFlyZonesFromURL("http://localhost:80/buildings/no-fly-zones.geojson");
         System.out.println(nfz.get(0).toString());
         
-        var aqsensors = loadAirQualitySensorsFromURL("http://localhost:80/maps/2020/01/01/air-quality-data.json");
+        var aqsensors = AirQualitySensor.loadListFromURL("http://localhost:80/maps/2020/01/01/air-quality-data.json");
         System.out.println(aqsensors.get(9).toString());
         
-        var w3w = loadWhat3WordsFromUrl("http://localhost:80/words/agents/mile/crib/details.json");
+        var w3w = What3Words.loadFromUrl("http://localhost:80/words/agents/mile/crib/details.json");
         System.out.println(w3w.toString());
        
     }
