@@ -10,7 +10,6 @@ public class Drone {
     
     private Point position;
     private int moveCount;
-    private double distanceTraveled;
     private ArrayList<Polygon> noFlyZones;
     private ArrayList<What3Words> sensorLocations;
     private ArrayList<AirQualitySensor> sensors;
@@ -21,7 +20,6 @@ public class Drone {
         
         this.position = position;
         this.moveCount = 0;
-        this.distanceTraveled = 0;
         this.noFlyZones = noFlyZones;
         this.sensors = sensors;    
         this.sensorLocations = new ArrayList<What3Words>();
