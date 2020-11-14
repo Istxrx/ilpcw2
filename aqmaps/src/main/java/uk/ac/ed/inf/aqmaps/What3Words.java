@@ -15,7 +15,7 @@ public class What3Words {
     
     public What3Words(String words) {
      
-        words = words.replaceAll(".", "/");
+        words = words.replaceAll("\\.", "/");
         var url = ("http://localhost:80/words/" + words + "/details.json");
         var what3words = loadFromUrl(url);
         

@@ -6,10 +6,16 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.io.File;
+import java.io.FileWriter;
 import java.lang.reflect.Type;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.Geometry;
+import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Polygon;
 
 
@@ -33,7 +39,7 @@ public class App {
         try {
             // The response object is of class HttpResponse<String>
             var response = client.send(request, BodyHandlers.ofString());
-            System.out.println(response.statusCode());
+            //System.out.println(response.statusCode());
             return(response.body());
             
         } catch (Exception e) {
@@ -58,18 +64,88 @@ public class App {
         
         return polygons;
     }
+    
+    private static void createAndWriteFile (String fileName, String content) {
+
+        try {
+            var file = new File(fileName);
+            file.createNewFile();
+            var writer = new FileWriter(fileName);
+            writer.write(content);
+            writer.close();
+
+        } catch (Exception e) {
+            System.out.println("Error in createAndWriteFile.");
+            e.printStackTrace();
+        }
+    }
+    
+    //Assigns color to corresponding value of pollution
+    private static String pollutionValueColor (double pollutionValue) {
+
+        if (0 <= pollutionValue && pollutionValue < 32) {
+            return "#00ff00";
+        }
+        if (32 <= pollutionValue && pollutionValue < 64) {
+            return "#40ff00";
+        }
+        if (64 <= pollutionValue && pollutionValue < 96) {
+            return "#80ff00";
+        }
+        if (96 <= pollutionValue && pollutionValue < 128) {
+            return "#c0ff00";
+        }
+        if (128 <= pollutionValue && pollutionValue < 160) {
+            return "#ffc000";
+        }
+        if (160 <= pollutionValue && pollutionValue < 192) {
+            return "#ff8000";
+        }
+        if (192 <= pollutionValue && pollutionValue < 224) {
+            return "#ff4000";
+        }
+        if (224 <= pollutionValue && pollutionValue < 256) {
+            return "#ff0000";
+        }
+        return null;
+    }
        
     public static void main(String[] args) {
         // "http://localhost:80/buildings/no-fly-zones.geojson"
         //System.out.println(readStringFromURL("http://localhost:80/buildings/no-fly-zones.geojson"));
-        var nfz = loadNoFlyZonesFromURL("http://localhost:80/buildings/no-fly-zones.geojson");
-        System.out.println(nfz.get(0).toString());
+        //var nfz = loadNoFlyZonesFromURL("http://localhost:80/buildings/no-fly-zones.geojson");
+        //System.out.println(nfz.get(0).toString());
         
         var aqsensors = AirQualitySensor.loadListFromURL("http://localhost:80/maps/2020/01/01/air-quality-data.json");
         System.out.println(aqsensors.get(9).toString());
         
-        var w3w = What3Words.loadFromUrl("http://localhost:80/words/agents/mile/crib/details.json");
-        System.out.println(w3w.toString());
+        var sensorLocations = new ArrayList<Point>();
+        for (AirQualitySensor sensor : aqsensors) {
+            var w3w = new What3Words(sensor.getLocation());
+            sensorLocations.add(Point.fromLngLat(w3w.getLongitude(), w3w.getLatitude()));
+        }
+        
+        //var w3w = What3Words.loadFromUrl("http://localhost:80/words/agents/mile/crib/details.json");
+        //System.out.println(w3w.toString());
+        
+        var features = new ArrayList<Feature>();
+
+        for (Point point : sensorLocations) {
+            features.add(Feature.fromGeometry((Geometry) point));
+        }
+        
+        for (int i = 0; i < features.size(); i++) {
+            features.get(i).addStringProperty("marker-size", "medium");
+            features.get(i).addStringProperty("location",aqsensors.get(i).getLocation());
+            features.get(i).addStringProperty("rgb-string", pollutionValueColor(aqsensors.get(i).getReading()));
+            features.get(i).addStringProperty("marker-color", pollutionValueColor(aqsensors.get(i).getReading()));
+            features.get(i).addStringProperty("marker-symbol", "lighthouse");
+        }
+        
+        var featureCollection = FeatureCollection.fromFeatures(features);
+        createAndWriteFile("heatmap.geojson", featureCollection.toJson());
+        
+        
        
     }
 }
