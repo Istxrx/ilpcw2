@@ -38,7 +38,7 @@ public class Pathfinding {
         return index;
     }
     
-    public static boolean intersectPolygon (Point start, Point end, Polygon polygon) {
+    public static boolean lineIntersectPolygon (Point start, Point end, Polygon polygon) {
         
         var intersect = false;
         var polygonPoints = polygon.coordinates().get(0);
