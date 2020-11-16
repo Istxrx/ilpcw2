@@ -2,11 +2,12 @@ package uk.ac.ed.inf.aqmaps;
 
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
+import java.util.List;
 
 import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Polygon;
 
-public class Pathfinding {
+public class Utils2D {
     
     public static double distance (Point a, Point b) {
         
@@ -33,8 +34,7 @@ public class Pathfinding {
                minDistance = distance(a, points.get(i));
                index = i;
            }
-        }
-        
+        }        
         return index;
     }
     
@@ -44,7 +44,6 @@ public class Pathfinding {
         var polygonPoints = polygon.coordinates().get(0);
         
         for (int i = 0; i < polygonPoints.size(); i++) {
-            
             intersect = Line2D.linesIntersect(
                     start.latitude(), 
                     start.longitude(),
@@ -58,9 +57,39 @@ public class Pathfinding {
             if (intersect) {
                 break;
             }
-        }
-        
+        }     
         return intersect;
+    }
+    
+    public static boolean lineIntersectPolygons (Point start, Point end, ArrayList<Polygon> polygons) {
+        
+        var intersect = false;
+        
+        for (var polygon : polygons) {
+            intersect = lineIntersectPolygon(start, end, polygon);
+            
+            if (intersect) {
+                break;
+            }
+        }
+        return intersect;
+    }
+    
+    public static ArrayList<Path> findMoves (Point start, double distance, ArrayList<Integer> directions, ArrayList<Polygon> obstacles) {
+        
+        var paths = new ArrayList<Path>();
+        
+        for (Integer direction : directions) {
+            var end = movePoint(start, distance, direction);
+            
+            if (!lineIntersectPolygons(start, end, obstacles)) {
+                
+                paths.add(new Path(
+                        new ArrayList<>(List.of(end)), 
+                        new ArrayList<>(List.of(direction))));
+            }
+        }
+        return paths;
     }
     
 }
