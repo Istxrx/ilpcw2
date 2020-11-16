@@ -52,8 +52,8 @@ public class Pathfinding {
                     end.longitude(), 
                     polygonPoints.get(i).latitude(), 
                     polygonPoints.get(i).longitude(), 
-                    polygonPoints.get((i + 1) % (polygonPoints.size() - 1)).latitude(), 
-                    polygonPoints.get((i + 1) % (polygonPoints.size() - 1)).longitude());
+                    polygonPoints.get((i + 1) % polygonPoints.size()).latitude(), 
+                    polygonPoints.get((i + 1) % polygonPoints.size()).longitude());
                 
             if (intersect) {
                 break;
