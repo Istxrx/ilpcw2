@@ -7,6 +7,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.io.File;
 import java.io.FileWriter;
 import java.lang.reflect.Type;
@@ -111,10 +112,8 @@ public class App {
     }
        
     public static void main(String[] args) {
-        // "http://localhost:80/buildings/no-fly-zones.geojson"
-        //System.out.println(readStringFromURL("http://localhost:80/buildings/no-fly-zones.geojson"));
-        //var nfz = loadNoFlyZonesFromURL("http://localhost:80/buildings/no-fly-zones.geojson");
-        //System.out.println(nfz.get(0).toString());
+        
+        var nfz = loadNoFlyZonesFromURL("http://localhost:80/buildings/no-fly-zones.geojson");
         
         var aqsensors = AirQualitySensor.loadListFromURL("http://localhost:80/maps/2020/01/01/air-quality-data.json");
         System.out.println(aqsensors.get(9).toString());
@@ -141,6 +140,30 @@ public class App {
             features.get(i).addStringProperty("marker-color", pollutionValueColor(aqsensors.get(i).getReading()));
             features.get(i).addStringProperty("marker-symbol", "lighthouse");
         }
+        
+        for (Polygon p : nfz) {
+            var feature = Feature.fromGeometry((Geometry) p);
+            feature.addStringProperty("fill", "#ff0000");;
+            features.add(feature);
+        }
+        
+        
+        var directions = new ArrayList<>(List.of(0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,260,270,280,290,300,310,320,330,340,350));
+        var path = new Path(Point.fromLngLat(-3.1900, 55.9460));
+        var paths = path.findContinuations(0.0002, directions, nfz);
+        
+        for (Path p : paths) {
+            features.add(p.toFeature());
+        }
+        
+        //var start = Point.fromLngLat(-3.1869, 55.9449);
+        var start = Point.fromLngLat(-3.1898, 55.9450);
+        
+        var drone = new Drone(start, nfz, aqsensors);
+        drone.moveToNearestSensor();   
+        
+        var f = drone.getFlightPath();
+        features.add(f);
         
         var featureCollection = FeatureCollection.fromFeatures(features);
         createAndWriteFile("heatmap.geojson", featureCollection.toJson());

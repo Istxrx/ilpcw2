@@ -2,8 +2,6 @@ package uk.ac.ed.inf.aqmaps;
 
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
-import java.util.List;
-
 import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Polygon;
 
@@ -18,8 +16,8 @@ public class Utils2D {
     public static Point movePoint (Point start, double distance, double angleDegrees) {
         
         var radians = Math.toRadians(angleDegrees);
-        var newLatitude = start.latitude() + distance * Math.cos(radians);
-        var newLongitide = start.longitude() + distance * Math.sin(radians);
+        var newLatitude = start.latitude() + distance * Math.sin(radians);
+        var newLongitide = start.longitude() + distance * Math.cos(radians);
         
         return Point.fromLngLat(newLongitide, newLatitude);
     }
@@ -75,21 +73,6 @@ public class Utils2D {
         return intersect;
     }
     
-    public static ArrayList<Path> findMoves (Point start, double distance, ArrayList<Integer> directions, ArrayList<Polygon> obstacles) {
-        
-        var paths = new ArrayList<Path>();
-        
-        for (Integer direction : directions) {
-            var end = movePoint(start, distance, direction);
-            
-            if (!lineIntersectPolygons(start, end, obstacles)) {
-                
-                paths.add(new Path(
-                        new ArrayList<>(List.of(end)), 
-                        new ArrayList<>(List.of(direction))));
-            }
-        }
-        return paths;
-    }
+    
     
 }
