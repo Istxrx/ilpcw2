@@ -147,20 +147,23 @@ public class App {
             features.add(feature);
         }
         
-        
+        /*
         var directions = new ArrayList<>(List.of(0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,260,270,280,290,300,310,320,330,340,350));
         var path = new Path(Point.fromLngLat(-3.1900, 55.9460));
         var paths = path.findContinuations(0.0002, directions, nfz);
         
         for (Path p : paths) {
             features.add(p.toFeature());
-        }
+        }*/
         
         //var start = Point.fromLngLat(-3.1869, 55.9449);
         var start = Point.fromLngLat(-3.1898, 55.9450);
         
         var drone = new Drone(start, nfz, aqsensors);
-        drone.moveToNearestSensor();   
+        drone.collectReadings(33);   
+        System.out.println("OK");
+        //drone.moveToNearestSensor();
+        //System.out.println("OK");
         
         var f = drone.getFlightPath();
         features.add(f);

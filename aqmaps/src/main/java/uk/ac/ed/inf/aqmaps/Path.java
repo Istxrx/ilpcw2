@@ -68,5 +68,30 @@ public class Path {
         }
         return paths;
     }
+    
+    public double heuristicValue (Point destination, double moveLength) {
+        var pathLength = this.moveDirections.size() * moveLength;
+        var distanceToDestination = Utils2D.distance(this.getEndPoint(), destination);
+        
+        return pathLength + distanceToDestination;
+    }
 
+    public static Path findBestPath (ArrayList<Path> paths, Point destination, double moveLength) {
+        var bestPath = paths.get(0);
+        var bestHeuristicValue = bestPath.heuristicValue(destination, moveLength);
+        
+        for (int i = 1; i < paths.size(); i++) {
+            var currentPath = paths.get(i);
+            var currentHeuristicValue = currentPath.heuristicValue(destination, moveLength);
+            //var difference = Math.abs(currentHeuristicValue - bestHeuristicValue);
+            // && difference > moveLength
+            if (currentHeuristicValue < bestHeuristicValue) {
+                bestPath = currentPath;
+                bestHeuristicValue = currentHeuristicValue;
+                
+            }
+        }
+        return bestPath;
+    }
+    
 }

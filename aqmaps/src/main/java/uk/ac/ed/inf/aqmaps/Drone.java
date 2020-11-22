@@ -18,6 +18,7 @@ public class Drone {
     private String flightPathLog;
     private ArrayList<Polygon> noFlyZones;
     private ArrayList<What3Words> sensorLocations;
+    private ArrayList<What3Words> visitedSensorLocations;
     private ArrayList<AirQualitySensor> sensors;
     
     private static final int MAX_MOVE_COUNT = 150;
@@ -45,6 +46,7 @@ public class Drone {
         this.noFlyZones = noFlyZones;
         this.sensors = sensors;    
         this.sensorLocations = new ArrayList<What3Words>();
+        this.visitedSensorLocations = new ArrayList<What3Words>();
         
         for (AirQualitySensor sensor : sensors) {
             sensorLocations.add(new What3Words(sensor.getLocation()));
@@ -58,47 +60,67 @@ public class Drone {
             this.position = Utils2D.movePoint(this.position, MOVE_LENGTH, direction);
             this.flightPath.addMove(this.position, direction);
             this.moveCount += 1;
+            System.out.println(moveCount);
             return true;
         }
         return false;  
     }
     
-    public void move (Path path) {
+    public boolean move (Path path) {
         
         for (Integer direction : path.getMoveDirections()) {
             if (!this.move(direction)) {
-                break;
+                return false;
             }
         }
+        return true;
     }
     
     public Feature getFlightPath () {
         return this.flightPath.toFeature();
     }
     
-    public void moveToNearestSensor () {
-        
-        var startingPath = new Path(this.flightPath.getEndPoint());
+    public boolean moveToNearestSensor () {
+              
+        var startingPath = new Path(this.position);
         var possiblePaths = startingPath.findContinuations(MOVE_LENGTH, POSSIBLE_DIRECTIONS, noFlyZones);
-        var found = false;
+        var points = new ArrayList<Point>();
         
-        while (!found) {
-            var path = possiblePaths.get(0);
+        for (What3Words w3w : this.sensorLocations) {
+            points.add(w3w.toPoint());
+        }
+        
+        var nearestSensor = Utils2D.findNearestPoint(this.position, points);
+        
+        while (true) {
+
+            var path = Path.findBestPath(possiblePaths, nearestSensor, MOVE_LENGTH);
 
             for (What3Words location : sensorLocations) {
-                if (Utils2D.distance(path.getEndPoint(), location.toPoint()) < READING_RANGE) {
-                    this.move(path);
-                    found = true;
-                    break;
+                if (Utils2D.distance(path.getEndPoint(), location.toPoint()) < READING_RANGE) {  
+                    if (this.move(path)) {
+                        this.visitedSensorLocations.add(location);
+                        this.sensorLocations.remove(location);
+                        return true;
+                    }
+                    
                 }
             }
             possiblePaths.addAll(path.findContinuations(MOVE_LENGTH, POSSIBLE_DIRECTIONS, noFlyZones));
-            possiblePaths.remove(0);
+            possiblePaths.remove(path);
 
         }
 
     }
     
+    public void collectReadings (int limit) {
+        int count = 0;
+        
+        while (this.sensorLocations.size() > 0 && this.moveCount < MAX_MOVE_COUNT && count < limit) {
+            this.moveToNearestSensor();
+            count++;
+        }
+    }
 
     
 

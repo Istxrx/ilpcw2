@@ -22,18 +22,18 @@ public class Utils2D {
         return Point.fromLngLat(newLongitide, newLatitude);
     }
     
-    public static int findNearestPoint (Point a, ArrayList<Point> points) {
+    public static Point findNearestPoint (Point a, ArrayList<Point> points) {
         
         var minDistance = distance(a, points.get(0));
-        int index = 0;
+        var nearestPoint = points.get(0);
         
         for (int i = 1; i < points.size(); i++) {
            if (distance(a, points.get(i)) < minDistance) {
                minDistance = distance(a, points.get(i));
-               index = i;
+               nearestPoint = points.get(i);
            }
         }        
-        return index;
+        return nearestPoint;
     }
     
     public static boolean lineIntersectPolygon (Point start, Point end, Polygon polygon) {
