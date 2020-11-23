@@ -2,6 +2,7 @@ package uk.ac.ed.inf.aqmaps;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import com.mapbox.geojson.Feature;
@@ -95,6 +96,8 @@ public class Drone {
         while (true) {
 
             var path = Path.findBestPath(possiblePaths, nearestSensor, MOVE_LENGTH);
+            
+            System.out.println("search space size = " + possiblePaths.size());
 
             for (What3Words location : sensorLocations) {
                 if (Utils2D.distance(path.getEndPoint(), location.toPoint()) < READING_RANGE) {  
@@ -106,7 +109,7 @@ public class Drone {
                     
                 }
             }
-            possiblePaths.addAll(path.findContinuations(MOVE_LENGTH, POSSIBLE_DIRECTIONS, noFlyZones));
+            possiblePaths.addAll(0,path.findContinuations(MOVE_LENGTH, POSSIBLE_DIRECTIONS, noFlyZones));
             possiblePaths.remove(path);
 
         }
