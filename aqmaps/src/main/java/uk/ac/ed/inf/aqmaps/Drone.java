@@ -18,9 +18,8 @@ public class Drone {
     private Path flightPath;
     private String flightPathLog;
     private ArrayList<Polygon> noFlyZones;
-    private ArrayList<What3Words> sensorLocations;
-    private ArrayList<What3Words> visitedSensorLocations;
     private ArrayList<AirQualitySensor> sensors;
+    private ArrayList<AirQualitySensor> visitedSensors;
     
     private static final int MAX_MOVE_COUNT = 150;
     private static final int DIRECTION_STEP = 10;
@@ -46,13 +45,7 @@ public class Drone {
         this.flightPath = new Path(position);
         this.noFlyZones = noFlyZones;
         this.sensors = sensors;    
-        this.sensorLocations = new ArrayList<What3Words>();
-        this.visitedSensorLocations = new ArrayList<What3Words>();
-        
-        for (AirQualitySensor sensor : sensors) {
-            sensorLocations.add(new What3Words(sensor.getLocation()));
-        }
-          
+        this.visitedSensors = new ArrayList<AirQualitySensor>();
     }
     
     public boolean move (int direction) {
@@ -87,8 +80,8 @@ public class Drone {
         var possiblePaths = startingPath.findContinuations(MOVE_LENGTH, POSSIBLE_DIRECTIONS, noFlyZones);
         var points = new ArrayList<Point>();
         
-        for (What3Words w3w : this.sensorLocations) {
-            points.add(w3w.toPoint());
+        for (AirQualitySensor sensor : sensors) {
+            points.add(sensor.getLocation().toPoint());
         }
         
         var nearestSensor = Utils2D.findNearestPoint(this.position, points);
@@ -99,11 +92,11 @@ public class Drone {
             
             System.out.println("search space size = " + possiblePaths.size());
 
-            for (What3Words location : sensorLocations) {
-                if (Utils2D.distance(path.getEndPoint(), location.toPoint()) < READING_RANGE) {  
+            for (AirQualitySensor sensor : sensors) {
+                if (Utils2D.distance(path.getEndPoint(), sensor.getLocation().toPoint()) < READING_RANGE) {  
                     if (this.move(path)) {
-                        this.visitedSensorLocations.add(location);
-                        this.sensorLocations.remove(location);
+                        this.visitedSensors.add(sensor);
+                        this.sensors.remove(sensor);
                         return true;
                     }
                     
@@ -119,7 +112,7 @@ public class Drone {
     public void collectReadings (int limit) {
         int count = 0;
         
-        while (this.sensorLocations.size() > 0 && this.moveCount < MAX_MOVE_COUNT && count < limit) {
+        while (this.sensors.size() > 0 && this.moveCount < MAX_MOVE_COUNT && count < limit) {
             this.moveToNearestSensor();
             count++;
         }

@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.lang.reflect.Type;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
@@ -117,25 +118,16 @@ public class App {
         
         var aqsensors = AirQualitySensor.loadListFromURL("http://localhost:80/maps/2020/01/01/air-quality-data.json");
         System.out.println(aqsensors.get(9).toString());
-        
-        var sensorLocations = new ArrayList<Point>();
-        for (AirQualitySensor sensor : aqsensors) {
-            var w3w = new What3Words(sensor.getLocation());
-            sensorLocations.add(Point.fromLngLat(w3w.getLongitude(), w3w.getLatitude()));
-        }
-        
-        //var w3w = What3Words.loadFromUrl("http://localhost:80/words/agents/mile/crib/details.json");
-        //System.out.println(w3w.toString());
-        
+                       
         var features = new ArrayList<Feature>();
 
-        for (Point point : sensorLocations) {
-            features.add(Feature.fromGeometry((Geometry) point));
+        for (AirQualitySensor sensor : aqsensors) {
+            features.add(Feature.fromGeometry((Geometry) sensor.getLocation().toPoint()));
         }
         
         for (int i = 0; i < features.size(); i++) {
             features.get(i).addStringProperty("marker-size", "medium");
-            features.get(i).addStringProperty("location",aqsensors.get(i).getLocation());
+            features.get(i).addStringProperty("location",aqsensors.get(i).getLocation().getWords());
             features.get(i).addStringProperty("rgb-string", pollutionValueColor(aqsensors.get(i).getReading()));
             features.get(i).addStringProperty("marker-color", pollutionValueColor(aqsensors.get(i).getReading()));
             features.get(i).addStringProperty("marker-symbol", "lighthouse");
@@ -147,24 +139,12 @@ public class App {
             features.add(feature);
         }
         
-        /*
-        var directions = new ArrayList<>(List.of(0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,260,270,280,290,300,310,320,330,340,350));
-        var path = new Path(Point.fromLngLat(-3.1900, 55.9460));
-        var paths = path.findContinuations(0.0002, directions, nfz);
-        
-        for (Path p : paths) {
-            features.add(p.toFeature());
-        }*/
-        
-        //var start = Point.fromLngLat(-3.1869, 55.9449);
         var start = Point.fromLngLat(-3.1898, 55.9450);
         
         var drone = new Drone(start, nfz, aqsensors);
         drone.collectReadings(33);   
         System.out.println("OK");
-        //drone.moveToNearestSensor();
-        //System.out.println("OK");
-        
+       
         var f = drone.getFlightPath();
         features.add(f);
         
@@ -174,4 +154,19 @@ public class App {
         
        
     }
+
+    /*public static void main(String[] args) {
+        
+        Gson gson =
+                new GsonBuilder()
+                .registerTypeAdapter(What3Words.class, new W3WDeserializer())
+                .create();
+        
+        var jsonString = App.readStringFromURL("http://localhost:80/maps/2020/01/01/air-quality-data.json");
+        Type listType = new TypeToken<ArrayList<AirQualitySensor>>(){}.getType();
+        ArrayList<AirQualitySensor> sensors = gson.fromJson(jsonString, listType);
+        
+        System.out.println(sensors.get(0).toString());
+    
+    }*/
 }

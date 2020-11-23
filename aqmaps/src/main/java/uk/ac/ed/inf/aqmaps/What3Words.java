@@ -1,6 +1,9 @@
 package uk.ac.ed.inf.aqmaps;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
 import com.mapbox.geojson.Point;
 
 public class What3Words {
@@ -16,6 +19,7 @@ public class What3Words {
     public What3Words(String words) {
      
         words = words.replaceAll("\\.", "/");
+        //TODO
         var url = ("http://localhost:80/words/" + words + "/details.json");
         var what3words = loadFromUrl(url);
         
@@ -27,7 +31,7 @@ public class What3Words {
     public String toString() {
         return(words +" longitude:" + coordinates.lng + " latitude:" + coordinates.lat);
     }
-    
+       
     public Point toPoint() {
         return(Point.fromLngLat(coordinates.lng, coordinates.lat));
     }
@@ -38,6 +42,10 @@ public class What3Words {
     
     public double getLongitude() {
         return this.coordinates.lng;
+    }
+    
+    public String getWords() {
+        return this.words;
     }
     
     public static What3Words loadFromUrl(String url) {

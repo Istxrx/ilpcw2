@@ -86,7 +86,7 @@ public class Path {
         var originalDistance = Utils2D.distance(this.getStartPoint(), destination);
         var weight = remainingDistance / originalDistance;
         
-        return weight * pathLength + remainingDistance;
+        return pathLength + 1.3 * remainingDistance;
     }
     
     public double greedyHeuristicValue (Point destination, double moveLength) {

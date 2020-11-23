@@ -4,11 +4,12 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 public class AirQualitySensor {
     
-    private String location;
+    private What3Words location;
     private double battery;
     private double reading;
     
@@ -17,7 +18,7 @@ public class AirQualitySensor {
         return(this.location + " " + this.battery + " " + this.reading);
     }
 
-    public String getLocation() {
+    public What3Words getLocation() {
         return this.location;
     }
 
@@ -31,9 +32,13 @@ public class AirQualitySensor {
     
     public static ArrayList<AirQualitySensor> loadListFromURL(String url) {
         
+        var gson = new GsonBuilder()
+                .registerTypeAdapter(What3Words.class, new W3WDeserializer())
+                .create();
+        
         var jsonString = App.readStringFromURL(url);
         Type listType = new TypeToken<ArrayList<AirQualitySensor>>(){}.getType();
-        ArrayList<AirQualitySensor> sensors = new Gson().fromJson(jsonString, listType);
+        ArrayList<AirQualitySensor> sensors = gson.fromJson(jsonString, listType);
         
         return sensors;
     }
