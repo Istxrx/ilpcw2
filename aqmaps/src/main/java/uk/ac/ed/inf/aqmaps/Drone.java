@@ -74,6 +74,50 @@ public class Drone {
         return this.flightPath.toFeature();
     }
     
+    public boolean moveToSensor(AirQualitySensor sensor) {
+
+        var startingPath = new Path(this.position);
+        var possiblePaths = startingPath.findContinuations(MOVE_LENGTH, POSSIBLE_DIRECTIONS, noFlyZones);
+
+        while (true) {
+
+            var path = Path.findBestPath(possiblePaths, sensor.getLocationAsPoint(), MOVE_LENGTH);
+
+            System.out.println("search space size = " + possiblePaths.size());
+
+            if (Utils2D.distance(path.getEndPoint(), sensor.getLocationAsPoint()) < READING_RANGE) {
+                return this.move(path);
+
+            }
+            possiblePaths.addAll(0, path.findContinuations(MOVE_LENGTH, POSSIBLE_DIRECTIONS, noFlyZones));
+            possiblePaths.remove(path);
+
+        }
+    }
+    
+    public void collectReadings () {
+        var points = AirQualitySensor.toPoints(sensors);
+        var graph = new Graph(points);
+        graph.greedyOrder();
+        
+        for (int i = 0; i < 20; i++) {
+            graph.swapOptimizeOrder();
+        }
+        
+
+
+        var visitOrder = graph.getVisitOrder();
+        
+        for (int i = 0; i < visitOrder.length; i++) {
+            System.out.println(visitOrder[i]);
+        }
+        
+        
+        for (int i = 0; i < visitOrder.length; i++) {
+           this.moveToSensor(this.sensors.get(visitOrder[i]));
+        }
+    }
+    
     public boolean moveToNearestSensor () {
               
         var startingPath = new Path(this.position);

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.mapbox.geojson.Point;
 
 public class AirQualitySensor {
     
@@ -30,10 +31,23 @@ public class AirQualitySensor {
         return this.reading;
     }
     
+    public Point getLocationAsPoint() {
+        return this.location.toPoint();
+    }
+    
+    public static ArrayList<Point> toPoints(ArrayList<AirQualitySensor> sensors) {
+        var points = new ArrayList<Point>();
+        
+        for (AirQualitySensor sensor : sensors) {
+            points.add(sensor.getLocationAsPoint());
+        }
+        return points;
+    }
+    
     public static ArrayList<AirQualitySensor> loadListFromURL(String url) {
         
         var gson = new GsonBuilder()
-                .registerTypeAdapter(What3Words.class, new W3WDeserializer())
+                .registerTypeAdapter(What3Words.class, new W3WDeserializer("80"))
                 .create();
         
         var jsonString = App.readStringFromURL(url);

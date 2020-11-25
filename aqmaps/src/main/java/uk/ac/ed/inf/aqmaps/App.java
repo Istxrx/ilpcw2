@@ -142,7 +142,9 @@ public class App {
         var start = Point.fromLngLat(-3.1898, 55.9450);
         
         var drone = new Drone(start, nfz, aqsensors);
-        drone.collectReadings(33);   
+        drone.collectReadings();  
+        
+        
         System.out.println("OK");
        
         var f = drone.getFlightPath();

@@ -8,6 +8,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 
 public class W3WDeserializer implements JsonDeserializer<What3Words>{
+    
+    private String port;
+    
+    public W3WDeserializer (String port) {
+        this.port = port;
+    }
 
     @Override
     public What3Words deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
