@@ -3,9 +3,9 @@ package uk.ac.ed.inf.aqmaps;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.Point;
 
 public class AirQualitySensor {
@@ -19,8 +19,8 @@ public class AirQualitySensor {
         return(this.location + " " + this.battery + " " + this.reading);
     }
 
-    public What3Words getLocation() {
-        return this.location;
+    public String getLocation() {
+        return this.location.getWords();
     }
 
     public double getBattery() {
@@ -33,6 +33,11 @@ public class AirQualitySensor {
     
     public Point getLocationAsPoint() {
         return this.location.toPoint();
+    }
+    
+    public Feature toFeature(boolean visited) {
+        //TODO
+        return null;
     }
     
     public static ArrayList<Point> toPoints(ArrayList<AirQualitySensor> sensors) {

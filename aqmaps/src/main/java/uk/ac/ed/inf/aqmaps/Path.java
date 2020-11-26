@@ -72,47 +72,61 @@ public class Path {
         }
         return paths;
     }
-    
-    public double heuristicValue (Point destination, double moveLength) {
+    /*
+    public double heuristicValue (Point target, double moveLength) {
         var pathLength = this.moveDirections.size() * moveLength;
-        var distanceToDestination = Utils2D.distance(this.getEndPoint(), destination);
+        var distanceToDestination = Utils2D.distance(this.getEndPoint(), target);
         
         return pathLength + distanceToDestination;
-    }
+    }*/
     
-    public double weightedHeuristicValue (Point destination, double moveLength) {
+    public double weightedHeuristicValue (Point target, double moveLength) {
         var pathLength = this.moveDirections.size() * moveLength;
-        var remainingDistance = Utils2D.distance(this.getEndPoint(), destination);
-        var originalDistance = Utils2D.distance(this.getStartPoint(), destination);
-        var weight = remainingDistance / originalDistance;
+        var remainingDistance = Utils2D.distance(this.getEndPoint(), target);
         
         return pathLength + 1.3 * remainingDistance;
     }
-    
+    /*
     public double greedyHeuristicValue (Point destination, double moveLength) {
 
         var distanceToDestination = Utils2D.distance(this.getEndPoint(), destination);
         
         return distanceToDestination;
-    }
+    }*/
 
-    public static Path findBestPath (ArrayList<Path> paths, Point destination, double moveLength) {
+    public static Path chooseBestPath (ArrayList<Path> paths, Point target, double moveLength) {
         var bestPath = paths.get(0);
-        var bestHeuristicValue = bestPath.weightedHeuristicValue(destination, moveLength);
+        var bestHeuristicValue = bestPath.weightedHeuristicValue(target, moveLength);
         
         for (int i = 1; i < paths.size(); i++) {
             var currentPath = paths.get(i);
-            var currentHeuristicValue = currentPath.weightedHeuristicValue(destination, moveLength);
-            //var difference = Math.abs(currentHeuristicValue - bestHeuristicValue);
-            // && difference > moveLength
+            var currentHeuristicValue = currentPath.weightedHeuristicValue(target, moveLength);
+
             if (currentHeuristicValue < bestHeuristicValue) {
                 bestPath = currentPath;
-                bestHeuristicValue = currentHeuristicValue;
-                
+                bestHeuristicValue = currentHeuristicValue;        
             }
         }
         return bestPath;
     }
     
-    
+    public static Path findPathToPoint(Point start, Point target, double range, double moveLength, 
+            ArrayList<Integer> directions, ArrayList<Polygon> obstacles) {
+
+        var startingPath = new Path(start);
+        var possiblePaths = startingPath.findContinuations(moveLength, directions, obstacles);
+
+        while (true) {
+
+            var path = chooseBestPath(possiblePaths, target, moveLength);
+
+            System.out.println("search space size = " + possiblePaths.size());
+
+            if (Utils2D.distance(path.getEndPoint(), target) < range) {
+                return path;
+            }
+            possiblePaths.addAll(path.findContinuations(moveLength, directions, obstacles));
+            possiblePaths.remove(path);
+        }
+    } 
 }
