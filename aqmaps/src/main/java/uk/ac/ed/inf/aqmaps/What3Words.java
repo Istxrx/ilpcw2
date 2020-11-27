@@ -22,12 +22,7 @@ public class What3Words {
         this.coordinates = what3words.coordinates;
         this.words = what3words.words;
     }
-       
-    @Override
-    public String toString() {
-        return(words +" longitude:" + coordinates.lng + " latitude:" + coordinates.lat);
-    }
-       
+     
     public Point toPoint() {
         return(Point.fromLngLat(coordinates.lng, coordinates.lat));
     }

@@ -22,7 +22,7 @@ public class Utils2D {
         return Point.fromLngLat(newLongitide, newLatitude);
     }
     
-    public static Point findNearestPoint (Point a, ArrayList<Point> points) {
+   /* public static Point findNearestPoint (Point a, ArrayList<Point> points) {
         
         var minDistance = distance(a, points.get(0));
         var nearestPoint = points.get(0);
@@ -34,7 +34,7 @@ public class Utils2D {
            }
         }        
         return nearestPoint;
-    }
+    }*/
     
     public static boolean lineIntersectPolygon (Point start, Point end, Polygon polygon) {
         
@@ -59,7 +59,8 @@ public class Utils2D {
         return intersect;
     }
     
-    public static boolean lineIntersectPolygons (Point start, Point end, ArrayList<Polygon> polygons) {
+    public static boolean lineIntersectPolygons (Point start, Point end, 
+            ArrayList<Polygon> polygons) {
         
         var intersect = false;
         

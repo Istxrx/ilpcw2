@@ -75,9 +75,11 @@ public class Drone {
         
         if (this.moveCount < MAX_MOVE_COUNT) {
             this.moveCount += 1;
-            this.flightPathLog = this.flightPathLog + this.moveCount + "," + this.position.longitude() + "," + this.position.latitude() + "," + direction;
+            this.flightPathLog = this.flightPathLog + this.moveCount + "," 
+                    + this.position.longitude() + "," + this.position.latitude() + "," + direction;
             this.position = Utils2D.movePoint(this.position, MOVE_LENGTH, direction);
-            this.flightPathLog = this.flightPathLog + "," + this.position.longitude() + "," + this.position.latitude();
+            this.flightPathLog = this.flightPathLog + "," + this.position.longitude() + "," 
+                    + this.position.latitude();
             this.flightPath.addMove(this.position, direction);
             return true;
         }
@@ -86,6 +88,9 @@ public class Drone {
     
     public boolean move (Path path) {
         
+        if (path == null) {
+            return false;
+        }
         int i = 0;
         for (Integer direction : path.getMoveDirections()) {
             if (!this.move(direction)) {
@@ -98,29 +103,31 @@ public class Drone {
         }
         return true;
     }
+    
+    public boolean moveToPoint(Point target, double range) {
+
+        var path = Path.findPathToPoint(this.position, target,
+                range, MOVE_LENGTH, POSSIBLE_DIRECTIONS, this.noFlyZones);
+        
+        return this.move(path);
+            
+    } 
 
     public boolean moveToSensor(AirQualitySensor sensor) {
-
-        var path = Path.findPathToPoint(this.position, sensor.getLocationAsPoint(), READING_RANGE, 
-                MOVE_LENGTH, POSSIBLE_DIRECTIONS, this.noFlyZones);
         
-        this.move(path);
-        return this.readSensor(sensor);        
+        if (this.moveToPoint(sensor.getLocationAsPoint(), READING_RANGE)) {
+            return this.readSensor(sensor);
+        }
+        return false;
+        
     }
     
-    public boolean moveToPoint(Point target) {
-
-        var path = Path.findPathToPoint(this.position, this.flightPath.getStartPoint(),
-                0.0001, MOVE_LENGTH, POSSIBLE_DIRECTIONS, this.noFlyZones);
-        
-        if (this.move(path)) {
-            this.flightPathLog = this.flightPathLog + "," + null + "\n";
-        }  
-        return false;
-    } 
-    
     public boolean returnToStartPosition() {
-        return this.moveToPoint(this.flightPath.getStartPoint());
+        if (this.moveToPoint(this.flightPath.getStartPoint(), 0.0001)) {
+            this.flightPathLog = this.flightPathLog + "," + null + "\n";
+            return true;
+        }
+        return false;
     }
        
     public void initiateRoutine () {
@@ -128,10 +135,7 @@ public class Drone {
         points.add(0,this.position);
         var graph = new Graph(points);
         graph.greedyOrder();
-        
-        for (int i = 0; i < 20; i++) {
-            graph.swapOptimizeOrder();
-        }
+        graph.swapOptimizeOrder(20);
         var visitOrder = graph.getVisitOrder();
 
         for (int i = 1; i < visitOrder.length; i++) {

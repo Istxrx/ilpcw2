@@ -61,21 +61,33 @@ public class Graph {
        }
     }
     
-    public void swapOptimizeOrder () {
+    public void swapOptimizeOrder (int numberOfTries) {
         
-        for (int i = 1; i < this.visitOrder.length - 1; i++) {
-            for (int j = i + 1; j < this.visitOrder.length; j++) {
-                
-                var currentDistances = this.distanceMatrix[this.visitOrder[i-1]][this.visitOrder[i]] 
-                        + this.distanceMatrix[this.visitOrder[j]][this.visitOrder[(j + 1) % this.visitOrder.length]];
-                
-                var swappedDistances = this.distanceMatrix[this.visitOrder[i-1]][this.visitOrder[j]] 
-                        + this.distanceMatrix[this.visitOrder[i]][this.visitOrder[(j + 1) % this.visitOrder.length]];
-                        
-                if (swappedDistances < currentDistances) {
-                    this.swapOrder(i, j);
+        var optimizable = true;
+        int count = 0;
+        while (count < numberOfTries && optimizable) {
+            optimizable = false; 
+            for (int i = 1; i < this.visitOrder.length - 1; i++) {
+                for (int j = i + 1; j < this.visitOrder.length; j++) {
+                    
+                    var startNodePrevious = this.visitOrder[i-1];
+                    var startNode = this.visitOrder[i];
+                    var endNode = this.visitOrder[j];
+                    var endNodeNext = this.visitOrder[(j + 1) % this.visitOrder.length];
+                    
+                    var currentDistances = this.distanceMatrix[startNodePrevious][startNode] 
+                            + this.distanceMatrix[endNode][endNodeNext];
+                    
+                    var swappedDistances = this.distanceMatrix[startNodePrevious][endNode] 
+                            + this.distanceMatrix[startNode][endNodeNext];
+                            
+                    if (swappedDistances < currentDistances) {
+                        this.swapOrder(i, j);
+                        optimizable = true;
+                    }
                 }
             }
+            count++;
         }
     }
 

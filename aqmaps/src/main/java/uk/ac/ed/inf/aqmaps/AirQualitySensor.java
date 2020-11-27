@@ -15,7 +15,7 @@ public class AirQualitySensor {
     private double battery;
     private String reading;
     
-    private static double LOW_BATTERY_THRESHOLD = 10;
+    private static final double LOW_BATTERY_THRESHOLD = 10;
     
     @Override
     public String toString() {
@@ -73,8 +73,7 @@ public class AirQualitySensor {
     public static ArrayList<AirQualitySensor> loadListFromURL(String url) {
         
         var gson = new GsonBuilder()
-                .registerTypeAdapter(What3Words.class, new W3WDeserializer("80"))
-                .create();
+                .registerTypeAdapter(What3Words.class, new W3WDeserializer("80")).create();
         
         var jsonString = App.readStringFromURL(url);
         Type listType = new TypeToken<ArrayList<AirQualitySensor>>(){}.getType();

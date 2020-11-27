@@ -24,10 +24,6 @@ public class Path {
         this.moveDirections = new ArrayList<>();
     }
 
-    public ArrayList<Point> getPoints() {
-        return points;
-    }
-
     public ArrayList<Integer> getMoveDirections() {
         return moveDirections;
     }
@@ -52,7 +48,8 @@ public class Path {
         return feature;
     }
 
-    public ArrayList<Path> findContinuations (double distance, ArrayList<Integer> directions, ArrayList<Polygon> obstacles) {
+    public ArrayList<Path> findContinuations (double distance, ArrayList<Integer> directions, 
+            ArrayList<Polygon> obstacles) {
         
         var paths = new ArrayList<Path>();
         var start = this.getEndPoint();
@@ -64,6 +61,7 @@ public class Path {
                 
                 var newPoints = new ArrayList<>(this.points);
                 newPoints.add(end);
+                
                 var newMoveDirections = new ArrayList<>(this.moveDirections);
                 newMoveDirections.add(direction);
                 
@@ -114,19 +112,20 @@ public class Path {
             ArrayList<Integer> directions, ArrayList<Polygon> obstacles) {
 
         var startingPath = new Path(start);
-        var possiblePaths = startingPath.findContinuations(moveLength, directions, obstacles);
+        var continuations = startingPath.findContinuations(moveLength, directions, obstacles);
 
-        while (true) {
+        while (continuations.size() > 0) {
 
-            var path = chooseBestPath(possiblePaths, target, moveLength);
+            var path = chooseBestPath(continuations, target, moveLength);
 
-            System.out.println("search space size = " + possiblePaths.size());
+            System.out.println("search space size = " + continuations.size());
 
             if (Utils2D.distance(path.getEndPoint(), target) < range) {
                 return path;
             }
-            possiblePaths.addAll(path.findContinuations(moveLength, directions, obstacles));
-            possiblePaths.remove(path);
+            continuations.addAll(path.findContinuations(moveLength, directions, obstacles));
+            continuations.remove(path);
         }
+        return null;
     } 
 }
