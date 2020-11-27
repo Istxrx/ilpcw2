@@ -3,7 +3,6 @@ package uk.ac.ed.inf.aqmaps;
 import java.util.ArrayList;
 
 import com.mapbox.geojson.Feature;
-import com.mapbox.geojson.Geometry;
 import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Polygon;
 
@@ -15,10 +14,11 @@ public class Drone {
     private String flightPathLog;
     private ArrayList<Polygon> noFlyZones;
     private ArrayList<AirQualitySensor> sensors;
-    private ArrayList<AirQualitySensor> readSensors;
-    private ArrayList<AirQualitySensor> lowBatterySensors;
+    private ArrayList<AirQualitySensor> visitedSensors;
     
     private static final int MAX_MOVE_COUNT = 150;
+    private static final double MOVE_LENGTH = 0.0003;
+    private static final double READING_RANGE = 0.0002;
     private static final int DIRECTION_STEP = 10;
     private static final ArrayList<Integer> POSSIBLE_DIRECTIONS;
     static {
@@ -30,11 +30,8 @@ public class Drone {
             direction += DIRECTION_STEP;
         } 
     }
-    private static final double MOVE_LENGTH = 0.0003;
-    private static final double READING_RANGE = 0.0002;
     
-    public Drone (Point position, 
-            ArrayList<Polygon> noFlyZones, 
+    public Drone (Point position, ArrayList<Polygon> noFlyZones, 
             ArrayList<AirQualitySensor> sensors) {
         
         this.position = position;
@@ -43,8 +40,7 @@ public class Drone {
         this.flightPathLog = "";
         this.noFlyZones = noFlyZones;
         this.sensors = sensors;
-        this.readSensors = new ArrayList<AirQualitySensor>();
-        this.lowBatterySensors = new ArrayList<AirQualitySensor>();
+        this.visitedSensors = new ArrayList<AirQualitySensor>();
     }
     
     public String getFlightPathLog() {
@@ -59,26 +55,9 @@ public class Drone {
         var features = new ArrayList<Feature>();
         
         for (AirQualitySensor sensor : this.sensors) {
-            var feature = Feature.fromGeometry((Geometry) sensor.getLocationAsPoint());
-            
-            feature.addStringProperty("marker-size", "medium");
-            feature.addStringProperty("location",sensor.getLocation());
-            
-            if (this.readSensors.contains(sensor)) {
-                feature.addStringProperty("rgb-string", App.pollutionColor(sensor.getReading()));
-                feature.addStringProperty("marker-color", App.pollutionColor(sensor.getReading()));
-                feature.addStringProperty("marker-symbol", App.pollutionSymbol(sensor.getReading()));
-            } else if (this.lowBatterySensors.contains(sensor)) {
-                feature.addStringProperty("rgb-string", "#000000");
-                feature.addStringProperty("marker-color", "#000000");
-                feature.addStringProperty("marker-symbol", "cross");
-            } else {
-                feature.addStringProperty("rgb-string", "#aaaaaa");
-                feature.addStringProperty("marker-color", "#aaaaaa");
-            }
+            var feature = sensor.toFeature(this.visitedSensors.contains(sensor));
             features.add(feature);
         }
-        
         return features;
     }
     
@@ -86,11 +65,7 @@ public class Drone {
         
         if (Utils2D.distance(this.position, sensor.getLocationAsPoint()) < READING_RANGE) {
             this.flightPathLog = this.flightPathLog + "," + sensor.getLocation() + "\n";
-            if (sensor.getBattery() < 10) {
-                this.lowBatterySensors.add(sensor);
-            } else {
-                this.readSensors.add(sensor);
-            }
+            this.visitedSensors.add(sensor);
             return true;
         }
         return false;
@@ -136,7 +111,7 @@ public class Drone {
     public boolean moveToPoint(Point target) {
 
         var path = Path.findPathToPoint(this.position, this.flightPath.getStartPoint(),
-                0.00001, MOVE_LENGTH, POSSIBLE_DIRECTIONS, this.noFlyZones);
+                0.0001, MOVE_LENGTH, POSSIBLE_DIRECTIONS, this.noFlyZones);
         
         if (this.move(path)) {
             this.flightPathLog = this.flightPathLog + "," + null + "\n";
@@ -150,6 +125,7 @@ public class Drone {
        
     public void initiateRoutine () {
         var points = AirQualitySensor.toPoints(sensors);
+        points.add(0,this.position);
         var graph = new Graph(points);
         graph.greedyOrder();
         
@@ -158,8 +134,8 @@ public class Drone {
         }
         var visitOrder = graph.getVisitOrder();
 
-        for (int i = 0; i < visitOrder.length; i++) {
-           this.moveToSensor(this.sensors.get(visitOrder[i]));
+        for (int i = 1; i < visitOrder.length; i++) {
+           this.moveToSensor(this.sensors.get(visitOrder[i] - 1));
         }
         this.returnToStartPosition();
     }

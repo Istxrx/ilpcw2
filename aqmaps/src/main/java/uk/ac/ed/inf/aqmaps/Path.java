@@ -80,11 +80,11 @@ public class Path {
         return pathLength + distanceToDestination;
     }*/
     
-    public double weightedHeuristicValue (Point target, double moveLength) {
+    public double weightedHeuristicValue (Point target, double moveLength, double weight) {
         var pathLength = this.moveDirections.size() * moveLength;
         var remainingDistance = Utils2D.distance(this.getEndPoint(), target);
         
-        return pathLength + 1.3 * remainingDistance;
+        return pathLength + weight * remainingDistance;
     }
     /*
     public double greedyHeuristicValue (Point destination, double moveLength) {
@@ -96,11 +96,11 @@ public class Path {
 
     public static Path chooseBestPath (ArrayList<Path> paths, Point target, double moveLength) {
         var bestPath = paths.get(0);
-        var bestHeuristicValue = bestPath.weightedHeuristicValue(target, moveLength);
+        var bestHeuristicValue = bestPath.weightedHeuristicValue(target, moveLength, 1.3);
         
         for (int i = 1; i < paths.size(); i++) {
             var currentPath = paths.get(i);
-            var currentHeuristicValue = currentPath.weightedHeuristicValue(target, moveLength);
+            var currentHeuristicValue = currentPath.weightedHeuristicValue(target, moveLength, 1.3);
 
             if (currentHeuristicValue < bestHeuristicValue) {
                 bestPath = currentPath;

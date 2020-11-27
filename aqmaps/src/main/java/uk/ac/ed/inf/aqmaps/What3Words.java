@@ -13,11 +13,10 @@ public class What3Words {
         private double lat;
     }
     
-    public What3Words(String words) {
+    public What3Words(String words, String port) {
      
         words = words.replaceAll("\\.", "/");
-        //TODO
-        var url = ("http://localhost:80/words/" + words + "/details.json");
+        var url = ("http://localhost:" + port + "/words/" + words + "/details.json");
         var what3words = loadFromUrl(url);
         
         this.coordinates = what3words.coordinates;

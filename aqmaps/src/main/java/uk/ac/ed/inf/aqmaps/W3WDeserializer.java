@@ -21,7 +21,7 @@ public class W3WDeserializer implements JsonDeserializer<What3Words>{
         
         var words = json.getAsString();
         
-        return new What3Words(words);
+        return new What3Words(words, port);
         
     }
 

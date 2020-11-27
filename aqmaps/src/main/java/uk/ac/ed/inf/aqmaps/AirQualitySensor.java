@@ -6,13 +6,16 @@ import java.util.ArrayList;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.Geometry;
 import com.mapbox.geojson.Point;
 
 public class AirQualitySensor {
     
     private What3Words location;
     private double battery;
-    private double reading;
+    private String reading;
+    
+    private static double LOW_BATTERY_THRESHOLD = 10;
     
     @Override
     public String toString() {
@@ -22,22 +25,40 @@ public class AirQualitySensor {
     public String getLocation() {
         return this.location.getWords();
     }
-
-    public double getBattery() {
-        return this.battery;
-    }
-
-    public double getReading() {
-        return this.reading;
-    }
     
     public Point getLocationAsPoint() {
         return this.location.toPoint();
     }
+
+    public double getBattery() {
+        return this.battery;
+    }
+    
+    private boolean hasLowBattery() {
+        return this.battery < LOW_BATTERY_THRESHOLD;
+    }
+
+    public double getReading() {
+        return Double.parseDouble(this.reading);
+    }
     
     public Feature toFeature(boolean visited) {
-        //TODO
-        return null;
+        var feature = Feature.fromGeometry((Geometry) this.getLocationAsPoint());
+        if (visited) {
+            if (!this.hasLowBattery()) {
+                feature.addStringProperty("rgb-string", App.pollutionColor(this.getReading()));
+                feature.addStringProperty("marker-color", App.pollutionColor(this.getReading()));
+                feature.addStringProperty("marker-symbol", App.pollutionSymbol(this.getReading()));
+            } else {
+                feature.addStringProperty("rgb-string", "#000000");
+                feature.addStringProperty("marker-color", "#000000");
+                feature.addStringProperty("marker-symbol", "cross");
+            }
+        } else {
+            feature.addStringProperty("rgb-string", "#aaaaaa");
+            feature.addStringProperty("marker-color", "#aaaaaa");
+        }
+        return feature;
     }
     
     public static ArrayList<Point> toPoints(ArrayList<AirQualitySensor> sensors) {

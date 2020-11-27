@@ -20,7 +20,6 @@ import com.mapbox.geojson.Polygon;
 public class App {
     
     //Constant bounds for values of latitudes and longitudes with respect to cardinal directions
-    //TODO
     private static final double BOUND_LATITUDE_NORTH = 55.946233;
     private static final double BOUND_LATITUDE_SOUTH = 55.942617;
     private static final double BOUND_LONGITUDE_EAST = -3.184319;
@@ -122,8 +121,15 @@ public class App {
     
     
     public static void main(String[] args) {
-        //TODO
-        var nfz = loadNoFlyZonesFromURL("http://localhost:80/buildings/no-fly-zones.geojson");
+        var day = args[0];
+        var month = args[1];
+        var year = args[2];
+        var latitude = Double.parseDouble(args[3]);
+        var longitude = Double.parseDouble(args[4]);
+        var seed = args[5];
+        var port = args[6];
+        
+        var start = Point.fromLngLat(longitude, latitude);
         
         var boundPoints = new ArrayList<Point>();
         boundPoints.add(Point.fromLngLat(BOUND_LONGITUDE_WEST, BOUND_LATITUDE_NORTH));
@@ -132,8 +138,15 @@ public class App {
         boundPoints.add(Point.fromLngLat(BOUND_LONGITUDE_WEST, BOUND_LATITUDE_SOUTH));
         var confinementArea = (Polygon.fromLngLats(List.of(boundPoints)));
         
-        var aqsensors = AirQualitySensor.loadListFromURL("http://localhost:80/maps/2020/01/01/air-quality-data.json");
-        System.out.println(aqsensors.get(9).toString());
+        var nfzUrl = "http://localhost:" + port + "/buildings/no-fly-zones.geojson";
+        var nfz = loadNoFlyZonesFromURL(nfzUrl);
+        
+
+        var aqsUrl = "http://localhost:" + port + "/maps/" + year + "/" + month + "/" + day + "/air-quality-data.json";
+        System.out.println(aqsUrl);
+        aqsUrl = "http://localhost:80/maps/2020/01/01/air-quality-data.json";
+        aqsUrl = "http://localhost:80/maps/2021/06/15/air-quality-data.json";
+        var aqsensors = AirQualitySensor.loadListFromURL(aqsUrl);
                        
         var features = new ArrayList<Feature>();
 
@@ -142,8 +155,7 @@ public class App {
             feature.addStringProperty("fill", "#ff0000");;
             features.add(feature);
         }
-        
-        var start = Point.fromLngLat(-3.1898, 55.9450);
+        nfz.add(confinementArea);
         
         var drone = new Drone(start, nfz, aqsensors);
         drone.initiateRoutine();  
