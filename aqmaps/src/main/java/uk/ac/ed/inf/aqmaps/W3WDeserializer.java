@@ -7,22 +7,22 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 
-public class W3WDeserializer implements JsonDeserializer<What3Words>{
-    
+public class W3WDeserializer implements JsonDeserializer<What3Words> {
+
     private String port;
-    
-    public W3WDeserializer (String port) {
+
+    public W3WDeserializer(String port) {
         this.port = port;
     }
 
     @Override
-    public What3Words deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+    public What3Words deserialize(JsonElement json, Type typeOf, JsonDeserializationContext context)
             throws JsonParseException {
-        
+
         var words = json.getAsString();
-        
+
         return new What3Words(words, port);
-        
+
     }
 
 }

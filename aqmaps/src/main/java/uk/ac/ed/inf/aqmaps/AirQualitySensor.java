@@ -10,22 +10,17 @@ import com.mapbox.geojson.Geometry;
 import com.mapbox.geojson.Point;
 
 public class AirQualitySensor {
-    
+
     private What3Words location;
     private double battery;
     private String reading;
-    
+
     private static final double LOW_BATTERY_THRESHOLD = 10;
-    
-    @Override
-    public String toString() {
-        return(this.location + " " + this.battery + " " + this.reading);
-    }
 
     public String getLocation() {
         return this.location.getWords();
     }
-    
+
     public Point getLocationAsPoint() {
         return this.location.toPoint();
     }
@@ -33,7 +28,7 @@ public class AirQualitySensor {
     public double getBattery() {
         return this.battery;
     }
-    
+
     private boolean hasLowBattery() {
         return this.battery < LOW_BATTERY_THRESHOLD;
     }
@@ -41,7 +36,7 @@ public class AirQualitySensor {
     public double getReading() {
         return Double.parseDouble(this.reading);
     }
-    
+
     public Feature toFeature(boolean visited) {
         var feature = Feature.fromGeometry((Geometry) this.getLocationAsPoint());
         if (visited) {
@@ -60,25 +55,25 @@ public class AirQualitySensor {
         }
         return feature;
     }
-    
+
     public static ArrayList<Point> toPoints(ArrayList<AirQualitySensor> sensors) {
         var points = new ArrayList<Point>();
-        
+
         for (AirQualitySensor sensor : sensors) {
             points.add(sensor.getLocationAsPoint());
         }
         return points;
     }
-    
+
     public static ArrayList<AirQualitySensor> loadListFromURL(String url) {
-        
+
         var gson = new GsonBuilder()
                 .registerTypeAdapter(What3Words.class, new W3WDeserializer("80")).create();
-        
+
         var jsonString = App.readStringFromURL(url);
-        Type listType = new TypeToken<ArrayList<AirQualitySensor>>(){}.getType();
+        Type listType = new TypeToken<ArrayList<AirQualitySensor>>() {}.getType();
         ArrayList<AirQualitySensor> sensors = gson.fromJson(jsonString, listType);
-        
+
         return sensors;
     }
 }
