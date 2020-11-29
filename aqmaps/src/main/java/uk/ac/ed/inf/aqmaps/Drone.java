@@ -20,13 +20,13 @@ public class Drone {
     private static final double MOVE_LENGTH = 0.0003;
     private static final double READING_RANGE = 0.0002;
     private static final int DIRECTION_STEP = 10;
-    private static final ArrayList<Integer> POSSIBLE_DIRECTIONS;
+    private static final ArrayList<Integer> ALLOWED_DIRECTIONS;
     static {
-        POSSIBLE_DIRECTIONS = new ArrayList<Integer>();
+        ALLOWED_DIRECTIONS = new ArrayList<Integer>();
         var direction = 0;
 
         while (direction < 360) {
-            POSSIBLE_DIRECTIONS.add(direction);
+            ALLOWED_DIRECTIONS.add(direction);
             direction += DIRECTION_STEP;
         }
     }
@@ -41,6 +41,9 @@ public class Drone {
         this.noFlyZones = noFlyZones;
         this.sensors = sensors;
         this.visitedSensors = new ArrayList<AirQualitySensor>();
+    }
+    public int getMoveCount() {
+        return this.moveCount;
     }
 
     public String getFlightPathLog() {
@@ -73,7 +76,7 @@ public class Drone {
 
     public boolean move(int direction) {
         
-        if (!POSSIBLE_DIRECTIONS.contains(direction)) {
+        if (!ALLOWED_DIRECTIONS.contains(direction)) {
             return false;
         }
         if (this.moveCount < MAX_MOVE_COUNT) {
@@ -110,7 +113,7 @@ public class Drone {
     public boolean moveToPoint(Point target, double range) {
 
         var path = Path.findPathToPoint(this.position, target, range, MOVE_LENGTH,
-                POSSIBLE_DIRECTIONS, this.noFlyZones);
+                ALLOWED_DIRECTIONS, this.noFlyZones);
 
         return this.move(path);
 
@@ -140,7 +143,7 @@ public class Drone {
         points.add(0, this.position);
         var graph = new Graph(points);
         graph.greedyOrder();
-        graph.swapOptimizeOrder(20);
+        graph.swapOptimizeOrder(30);
         var visitOrder = graph.getVisitOrder();
 
         for (int i = 1; i < visitOrder.length; i++) {

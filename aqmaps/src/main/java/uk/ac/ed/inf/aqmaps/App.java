@@ -115,17 +115,42 @@ public class App {
         }
         return null;
     }
+    
+    public static Drone initiate(String day, String month, String year, double startLatitude, double startLongitude, String port) {
+        var start = Point.fromLngLat(startLongitude, startLatitude);
+
+        var boundPoints = new ArrayList<Point>();
+        boundPoints.add(Point.fromLngLat(BOUND_LONGITUDE_WEST, BOUND_LATITUDE_NORTH));
+        boundPoints.add(Point.fromLngLat(BOUND_LONGITUDE_EAST, BOUND_LATITUDE_NORTH));
+        boundPoints.add(Point.fromLngLat(BOUND_LONGITUDE_EAST, BOUND_LATITUDE_SOUTH));
+        boundPoints.add(Point.fromLngLat(BOUND_LONGITUDE_WEST, BOUND_LATITUDE_SOUTH));
+        var confinementArea = (Polygon.fromLngLats(List.of(boundPoints)));
+
+        var noFlyZonesUrl = "http://localhost:" + port + "/buildings/no-fly-zones.geojson";
+        var noflyZones = loadNoFlyZonesFromURL(noFlyZonesUrl);
+
+        var sensorsUrl = "http://localhost:" + port + "/maps/" + year + "/" + month + "/" + day
+                + "/air-quality-data.json";
+        var sensors = AirQualitySensor.loadListFromURL(sensorsUrl);
+
+        noflyZones.add(confinementArea);
+
+        var drone = new Drone(start, noflyZones, sensors);
+        drone.initiateRoutine();
+
+        return drone;
+    }
 
     public static void main(String[] args) {
         var day = args[0];
         var month = args[1];
         var year = args[2];
-        var latitude = Double.parseDouble(args[3]);
-        var longitude = Double.parseDouble(args[4]);
+        var startLatitude = Double.parseDouble(args[3]);
+        var startLongitude = Double.parseDouble(args[4]);
         var seed = args[5];
         var port = args[6];
 
-        var start = Point.fromLngLat(longitude, latitude);
+        var start = Point.fromLngLat(startLongitude, startLatitude);
 
         var boundPoints = new ArrayList<Point>();
         boundPoints.add(Point.fromLngLat(BOUND_LONGITUDE_WEST, BOUND_LATITUDE_NORTH));

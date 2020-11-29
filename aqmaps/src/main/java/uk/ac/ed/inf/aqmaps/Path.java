@@ -11,85 +11,123 @@ import com.mapbox.geojson.Polygon;
 
 public class Path {
 
-    private ArrayList<Point> points;
-    private ArrayList<Integer> moveDirections;
+    private Point point;
+    private Integer moveDirection;
     private double length;
+    
+    private Path previous;
+    private ArrayList<Path> branches;
+    
+    private static final double EPSILON = 2.0;
 
-    public Path(ArrayList<Point> points, ArrayList<Integer> moveDirections, double length) {
-        this.points = points;
-        this.moveDirections = moveDirections;
+    private Path(Point point, Integer moveDirection, double length, Path previous,
+            ArrayList<Path> branches) {
+        
+        this.point = point;
+        this.moveDirection = moveDirection;
         this.length = length;
+        this.previous = previous;
+        this.branches = branches;
     }
 
     public Path(Point startPoint) {
-        this(new ArrayList<>(List.of(startPoint)), new ArrayList<>(), 0);
+        this(startPoint, null, 0, null, null);
     }
 
     public ArrayList<Integer> getMoveDirections() {
+        var moveDirections = new ArrayList<Integer>();
+        var path = this;
+        
+        while (path.branches != null) {
+            path = path.branches.get(0);
+            moveDirections.add(path.moveDirection);
+        }
         return moveDirections;
     }
-
-    public Point getEndPoint() {
-        return points.get(points.size() - 1);
+    
+    public ArrayList<Point> getPoints() {
+        var points = new ArrayList<Point>();
+        var path = this;
+        
+        while (true) {
+            points.add(path.point);
+            if (path.branches != null) {
+                path = path.branches.get(0);
+            } else {
+                break;
+            }
+        }
+        return points;
     }
-
+    
     public Point getStartPoint() {
-        return points.get(0);
+        var path = this;
+        while (path.previous != null) {
+            path = path.previous;
+        }
+        return path.point;
     }
-
+    
     public void addMove(Point end, int direction) {
-        this.points.add(end);
-        this.moveDirections.add(direction);
+        var path = this;
+        while (path.branches != null) {
+            path = path.branches.get(0);
+        }
+        path.branches = new ArrayList<>();
+        var branch = new Path(end, direction, 0, this, null);
+        path.branches.add(branch);
     }
+    
 
     public Feature toFeature() {
-        var lineString = LineString.fromLngLats(this.points);
+        var lineString = LineString.fromLngLats(this.getPoints());
         var feature = Feature.fromGeometry((Geometry) lineString);
 
         return feature;
     }
 
-    public ArrayList<Path> findContinuations(double moveLength, ArrayList<Integer> directions,
+    private Path trimToStart() {
+        var path = this;
+        while (path.previous != null) {
+            path.previous.branches = new ArrayList<>(List.of(path));
+            path = path.previous;
+        }
+        return path;
+    }
+
+    private ArrayList<Path> findBranches(double moveLength, ArrayList<Integer> directions, 
             ArrayList<Polygon> obstacles) {
-
-        var paths = new ArrayList<Path>();
-        var start = this.getEndPoint();
-
+        this.branches = new ArrayList<>();
+        var start = this.point;
+        
         for (Integer direction : directions) {
             var end = Utils2D.movePoint(start, moveLength, direction);
 
             if (!Utils2D.lineIntersectPolygons(start, end, obstacles)) {
-
-                var newPoints = new ArrayList<>(this.points);
-                newPoints.add(end);
-
-                var newMoveDirections = new ArrayList<>(this.moveDirections);
-                newMoveDirections.add(direction);
-
-                paths.add(new Path(newPoints, newMoveDirections, this.length + moveLength));
+                var branch = new Path(end, direction, this.length + moveLength, this, null);
+                this.branches.add(branch);
             }
         }
-        return paths;
+        return new ArrayList<>(this.branches);
     }
 
-    public double weightedHeuristicValue(Point target, double weight) {
+    private double weightedHeuristicValue(Point target, double weight) {
         var pathLength = this.length;
-        var remainingDistance = Utils2D.distance(this.getEndPoint(), target);
+        var remainingDistance = Utils2D.distance(this.point, target);
 
         return pathLength + weight * remainingDistance;
     }
 
-    public static Path chooseBestPath(ArrayList<Path> paths, Point target) {
+    private static Path chooseBestPath(ArrayList<Path> paths, Point target) {
         var bestPath = paths.get(0);
-        var bestHeuristicValue = bestPath.weightedHeuristicValue(target, 1.3);
+        var bestHeuristicValue = bestPath.weightedHeuristicValue(target, EPSILON);
 
-        for (int i = 1; i < paths.size(); i++) {
-            var currentPath = paths.get(i);
-            var currentHeuristicValue = currentPath.weightedHeuristicValue(target, 1.3);
+        for (Path path : paths) {
+            var heuristicValue = path.weightedHeuristicValue(target, EPSILON);
 
-            if (currentHeuristicValue < bestHeuristicValue) {
-                bestPath = currentPath;
-                bestHeuristicValue = currentHeuristicValue;
+            if (heuristicValue < bestHeuristicValue) {
+                bestPath = path;
+                bestHeuristicValue = heuristicValue;
             }
         }
         return bestPath;
@@ -99,16 +137,16 @@ public class Path {
             ArrayList<Integer> directions, ArrayList<Polygon> obstacles) {
 
         var startingPath = new Path(start);
-        var continuations = startingPath.findContinuations(moveLength, directions, obstacles);
+        var paths = startingPath.findBranches(moveLength, directions, obstacles);
 
-        while (continuations.size() > 0) {
-            var path = chooseBestPath(continuations, target);
+        while (paths.size() > 0) {
+            var path = chooseBestPath(paths, target);
 
-            if (Utils2D.distance(path.getEndPoint(), target) < range) {
-                return path;
-            }
-            continuations.addAll(path.findContinuations(moveLength, directions, obstacles));
-            continuations.remove(path);
+            if (Utils2D.distance(path.point, target) < range) {
+                return path.trimToStart();
+            }           
+            paths.addAll(path.findBranches(moveLength, directions, obstacles));
+            paths.remove(path);
         }
         return null;
     }
