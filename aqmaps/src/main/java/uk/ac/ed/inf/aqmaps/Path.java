@@ -14,15 +14,15 @@ public class Path {
     private Point point;
     private Integer moveDirection;
     private double length;
-    
+
     private Path previous;
     private ArrayList<Path> branches;
-    
+
     private static final double EPSILON = 2.0;
 
     private Path(Point point, Integer moveDirection, double length, Path previous,
             ArrayList<Path> branches) {
-        
+
         this.point = point;
         this.moveDirection = moveDirection;
         this.length = length;
@@ -37,18 +37,18 @@ public class Path {
     public ArrayList<Integer> getMoveDirections() {
         var moveDirections = new ArrayList<Integer>();
         var path = this;
-        
+
         while (path.branches != null) {
             path = path.branches.get(0);
             moveDirections.add(path.moveDirection);
         }
         return moveDirections;
     }
-    
+
     public ArrayList<Point> getPoints() {
         var points = new ArrayList<Point>();
         var path = this;
-        
+
         while (true) {
             points.add(path.point);
             if (path.branches != null) {
@@ -59,7 +59,7 @@ public class Path {
         }
         return points;
     }
-    
+
     public Point getStartPoint() {
         var path = this;
         while (path.previous != null) {
@@ -67,7 +67,7 @@ public class Path {
         }
         return path.point;
     }
-    
+
     public void addMove(Point end, int direction) {
         var path = this;
         while (path.branches != null) {
@@ -77,7 +77,6 @@ public class Path {
         var branch = new Path(end, direction, 0, this, null);
         path.branches.add(branch);
     }
-    
 
     public Feature toFeature() {
         var lineString = LineString.fromLngLats(this.getPoints());
@@ -95,11 +94,11 @@ public class Path {
         return path;
     }
 
-    private ArrayList<Path> findBranches(double moveLength, ArrayList<Integer> directions, 
+    private ArrayList<Path> findBranches(double moveLength, ArrayList<Integer> directions,
             ArrayList<Polygon> obstacles) {
         this.branches = new ArrayList<>();
         var start = this.point;
-        
+
         for (Integer direction : directions) {
             var end = Utils2D.movePoint(start, moveLength, direction);
 
@@ -144,7 +143,7 @@ public class Path {
 
             if (Utils2D.distance(path.point, target) < range) {
                 return path.trimToStart();
-            }           
+            }
             paths.addAll(path.findBranches(moveLength, directions, obstacles));
             paths.remove(path);
         }
