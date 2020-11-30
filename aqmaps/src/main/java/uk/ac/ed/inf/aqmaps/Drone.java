@@ -6,7 +6,7 @@ import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Polygon;
 
 /**
- * A drone with purpose to visit and collect reading from sensors. 
+ * A representation of a drone with purpose to visit and collect reading from sensors. 
  */
 public class Drone {
 

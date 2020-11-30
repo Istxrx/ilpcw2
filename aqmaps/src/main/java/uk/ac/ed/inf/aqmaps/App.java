@@ -179,7 +179,8 @@ public class App {
         var flightPathLog = drone.getFlightPathLog();
         var fileName = "flightpath-" + day + "-" + month + "-" + year + ".txt";
         createAndWriteFile(fileName, flightPathLog);
-        System.out.println(flightPathLog);
+        System.out.println("Finished routine on " + day + "/" + month + "/" + year + " with "
+                + drone.getMoveCount() + " moves");
 
         var feature = drone.getFlightPathAsFeature();
         var features = drone.getReadingsAsFeatures();
