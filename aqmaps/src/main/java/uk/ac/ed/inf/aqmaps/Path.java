@@ -13,9 +13,8 @@ import com.mapbox.geojson.Polygon;
  */
 public class Path {
     
-    /**
-     * Used as a weight in heuristic function
-     */
+
+    //Used as a weight in heuristic function
     private static final double EPSILON = 2.0;
     
     private Point point;
