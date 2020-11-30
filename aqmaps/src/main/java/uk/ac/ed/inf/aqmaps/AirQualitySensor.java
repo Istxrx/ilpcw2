@@ -1,8 +1,6 @@
 package uk.ac.ed.inf.aqmaps;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
-
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.mapbox.geojson.Feature;
@@ -11,11 +9,11 @@ import com.mapbox.geojson.Point;
 
 public class AirQualitySensor {
 
+    private static final double LOW_BATTERY_THRESHOLD = 10.0;
+    
     private What3Words location;
     private double battery;
     private String reading;
-
-    private static final double LOW_BATTERY_THRESHOLD = 10;
 
     public String getLocation() {
         return this.location.getWords();
@@ -25,11 +23,7 @@ public class AirQualitySensor {
         return this.location.toPoint();
     }
 
-    public double getBattery() {
-        return this.battery;
-    }
-
-    private boolean hasLowBattery() {
+    public boolean hasLowBattery() {
         return this.battery < LOW_BATTERY_THRESHOLD;
     }
 
@@ -38,7 +32,9 @@ public class AirQualitySensor {
     }
 
     public Feature toFeature(boolean visited) {
+        
         var feature = Feature.fromGeometry((Geometry) this.getLocationAsPoint());
+        
         if (visited) {
             if (!this.hasLowBattery()) {
                 feature.addStringProperty("rgb-string", App.pollutionColor(this.getReading()));
@@ -57,6 +53,7 @@ public class AirQualitySensor {
     }
 
     public static ArrayList<Point> toPoints(ArrayList<AirQualitySensor> sensors) {
+        
         var points = new ArrayList<Point>();
 
         for (AirQualitySensor sensor : sensors) {
@@ -65,15 +62,15 @@ public class AirQualitySensor {
         return points;
     }
 
-    public static ArrayList<AirQualitySensor> loadListFromURL(String url) {
-
+    public static ArrayList<AirQualitySensor> loadListFromURL(String url, String port) {
+        //TODO
         var gson = new GsonBuilder()
-                .registerTypeAdapter(What3Words.class, new W3WDeserializer("80")).create();
-
+                .registerTypeAdapter(What3Words.class, new W3WDeserializer(port)).create();
         var jsonString = App.readStringFromURL(url);
-        Type listType = new TypeToken<ArrayList<AirQualitySensor>>() {}.getType();
+        var listType = new TypeToken<ArrayList<AirQualitySensor>>() {}.getType();
+        
         ArrayList<AirQualitySensor> sensors = gson.fromJson(jsonString, listType);
-
+        
         return sensors;
     }
 }

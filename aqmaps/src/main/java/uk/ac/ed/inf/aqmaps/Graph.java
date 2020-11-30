@@ -1,7 +1,6 @@
 package uk.ac.ed.inf.aqmaps;
 
 import java.util.ArrayList;
-
 import com.mapbox.geojson.Point;
 
 public class Graph {
@@ -26,7 +25,7 @@ public class Graph {
         return this.visitOrder;
     }
 
-    public void swapOrder(int startIndex, int endIndex) {
+    private void swapOrder(int startIndex, int endIndex) {
 
         for (int i = 0; i <= (endIndex - startIndex) / 2; i++) {
             var temp = this.visitOrder[startIndex + i];
@@ -35,7 +34,7 @@ public class Graph {
         }
     }
 
-    public void greedyOrder() {
+    public void toGreedyOrder() {
 
         for (int i = 1; i < this.visitOrder.length; i++) {
             var current = visitOrder[i - 1];
@@ -45,6 +44,7 @@ public class Graph {
             for (int j = i + 1; j < this.distanceMatrix.length; j++) {
                 var candidate = visitOrder[j];
                 var distance = this.distanceMatrix[current][candidate];
+                
                 if (distance < minDistance) {
                     minDistance = distance;
                     nearest = candidate;
@@ -57,10 +57,12 @@ public class Graph {
 
     public void swapOptimizeOrder(int numberOfTries) {
 
-        var optimizable = true;
+        var optimized = true;
         int count = 0;
-        while (count < numberOfTries && optimizable) {
-            optimizable = false;
+        
+        while (count < numberOfTries && optimized) {
+            optimized = false;
+            
             for (int i = 1; i < this.visitOrder.length - 1; i++) {
                 for (int j = i + 1; j < this.visitOrder.length; j++) {
 
@@ -71,13 +73,12 @@ public class Graph {
 
                     var currentDistances = this.distanceMatrix[previousToStartNode][startNode]
                             + this.distanceMatrix[endNode][nextToEndNode];
-
                     var swappedDistances = this.distanceMatrix[previousToStartNode][endNode]
                             + this.distanceMatrix[startNode][nextToEndNode];
 
                     if (swappedDistances < currentDistances) {
                         this.swapOrder(i, j);
-                        optimizable = true;
+                        optimized = true;
                     }
                 }
             }

@@ -14,8 +14,7 @@ import com.mapbox.geojson.Polygon;
 
 public class App {
 
-    // Constant bounds for values of latitudes and longitudes with respect to
-    // cardinal directions
+    // Constant bounds for values of latitudes and longitudes with respect to cardinal directions
     private static final double BOUND_LATITUDE_NORTH = 55.946233;
     private static final double BOUND_LATITUDE_SOUTH = 55.942617;
     private static final double BOUND_LONGITUDE_EAST = -3.184319;
@@ -25,7 +24,6 @@ public class App {
 
         // Create a new HttpClient with default settings.
         var client = HttpClient.newHttpClient();
-
         // HttpClient assumes that it is a GET request by default.
         var request = HttpRequest.newBuilder().uri(URI.create(url)).build();
 
@@ -34,7 +32,7 @@ public class App {
             var response = client.send(request, BodyHandlers.ofString());
             // System.out.println(response.statusCode());
             return (response.body());
-
+            
         } catch (Exception e) {
             System.out.println("Fatal error: Unable to connect to " + url + ".");
             e.printStackTrace();
@@ -117,6 +115,7 @@ public class App {
     }
     
     public static Drone initiate(String day, String month, String year, double startLatitude, double startLongitude, String port) {
+        
         var start = Point.fromLngLat(startLongitude, startLatitude);
 
         var boundPoints = new ArrayList<Point>();
@@ -131,12 +130,12 @@ public class App {
 
         var sensorsUrl = "http://localhost:" + port + "/maps/" + year + "/" + month + "/" + day
                 + "/air-quality-data.json";
-        var sensors = AirQualitySensor.loadListFromURL(sensorsUrl);
+        var sensors = AirQualitySensor.loadListFromURL(sensorsUrl, port);
 
         noflyZones.add(confinementArea);
 
         var drone = new Drone(start, noflyZones, sensors);
-        drone.initiateRoutine();
+        drone.executeReadingRoutine();;
 
         return drone;
     }
@@ -164,7 +163,7 @@ public class App {
 
         var sensorsUrl = "http://localhost:" + port + "/maps/" + year + "/" + month + "/" + day
                 + "/air-quality-data.json";
-        var sensors = AirQualitySensor.loadListFromURL(sensorsUrl);
+        var sensors = AirQualitySensor.loadListFromURL(sensorsUrl, port);
 
         /*
          * var features = new ArrayList<Feature>();
@@ -175,7 +174,7 @@ public class App {
         noflyZones.add(confinementArea);
 
         var drone = new Drone(start, noflyZones, sensors);
-        drone.initiateRoutine();
+        drone.executeReadingRoutine();
 
         var flightPathLog = drone.getFlightPathLog();
         var fileName = "flightpath-" + day + "-" + month + "-" + year + ".txt";
