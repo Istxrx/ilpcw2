@@ -28,9 +28,7 @@ public class App {
         var request = HttpRequest.newBuilder().uri(URI.create(url)).build();
 
         try {
-            // The response object is of class HttpResponse<String>
             var response = client.send(request, BodyHandlers.ofString());
-            // System.out.println(response.statusCode());
             return (response.body());
             
         } catch (Exception e) {
@@ -73,7 +71,12 @@ public class App {
         }
     }
 
-    // Assigns color to corresponding value of pollution
+    /**
+     * Assigns color to corresponding value of pollution
+     * 
+     * @param pollutionValue the value of air pollution
+     * @return the hexadecimal code of a color
+     */
     public static String pollutionColor(double pollutionValue) {
 
         if (0 <= pollutionValue && pollutionValue < 32) {
@@ -103,6 +106,12 @@ public class App {
         return null;
     }
 
+    /**
+     * Assigns symbol to corresponding value of pollution
+     * 
+     * @param pollutionValue the value of air pollution
+     * @return the name of a symbol
+     */
     public static String pollutionSymbol(double pollutionValue) {
 
         if (0 <= pollutionValue && pollutionValue < 128) {

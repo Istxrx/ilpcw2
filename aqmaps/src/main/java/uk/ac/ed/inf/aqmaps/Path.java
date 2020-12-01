@@ -92,7 +92,7 @@ public class Path {
     /**
      * Extends the end of this path by a new move. Does not keep track of length.
      *
-     * @param end the new end point of the path
+     * @param end       the new end point of the path
      * @param direction the direction that was used to get to this point
      */
     public void addMove(Point end, int direction) {
@@ -119,7 +119,7 @@ public class Path {
     /**
      * Reconstructs the path from end to start.
      * 
-     * @return the reference to the start of this path
+     * @return reference to the start of this path
      */
     private Path getStart() {
         
@@ -160,9 +160,9 @@ public class Path {
     /**
      * Assigns value based on length of this path and estimated distance to target point.
      *
-     * @param target the point that the path should lead to
+     * @param target  the point that the path should lead to
      * @param epsilon the weight, epsilon > 1 favors path length over distance to target
-     * @return heuristic value = path length + epsilon * distance to target
+     * @return heuristic value = path length + epsilon * distance to target point
      */
     private double weightedHeuristicValue(Point target, double epsilon) {
         
@@ -173,9 +173,9 @@ public class Path {
     }
 
     /**
-     * @param paths the paths to choose from
+     * @param paths  the paths to choose from
      * @param target the point that each path should lead to
-     * @return the path from the list that has the lowest (best) heuristic value
+     * @return path from the list that has the lowest (best) heuristic value
      */
     private static Path chooseBestPath(ArrayList<Path> paths, Point target) {
         
@@ -196,12 +196,12 @@ public class Path {
     /**
      * Performs an variation of A* search.
      *
-     * @param start the start point of the path
-     * @param target target the point that the path should lead to
-     * @param range the range around the target within which the path should end
+     * @param start      the start point of the path
+     * @param target     target the point that the path should lead to
+     * @param range      the range around the target within which the path should end
      * @param moveLength the length of each move in the path
      * @param directions the list of allowed directions for the moves in degrees
-     * @param obstacles the list of polygons that should not be crossed
+     * @param obstacles  the list of polygons that should not be crossed
      * @return path to the target point within range while avoiding obstacles
      */
     public static Path findPathToPoint(Point start, Point target, double range, double moveLength,

@@ -48,14 +48,14 @@ public class Drone {
     }
     
     /**
-     * @return the number of moves the drone has done so far
+     * @return the number of moves this drone has done so far
      */
     public int getMoveCount() {
         return this.moveCount;
     }
 
     /**
-     * @return the flight path loq that describes the actions of the drone so far
+     * @return the flight path loq that describes the actions of this drone so far
      */
     public String getFlightPathLog() {
         return this.flightPathLog;
@@ -150,7 +150,7 @@ public class Drone {
      * Moves the drone to a target point within a given range.
      *
      * @param target the point that the drone should reach
-     * @param range the range around the target within which the drone should end
+     * @param range  the range around the target within which the drone should end
      * @return true if the drone reaches the target, false otherwise
      */
     private boolean moveToPoint(Point target, double range) {

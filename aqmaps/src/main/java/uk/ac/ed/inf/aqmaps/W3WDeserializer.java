@@ -7,6 +7,10 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 
+/**
+ * Custom Json deserializer for What3Words to make the AirQualitySensor deserialization possible and
+ * more compact
+ */
 public class W3WDeserializer implements JsonDeserializer<What3Words> {
 
     private String port;
