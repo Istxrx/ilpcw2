@@ -17,6 +17,7 @@ public class Utils2D {
      */
     public static double distance(Point a, Point b) {
 
+        // distance = sqrt((x1-x2)^2 + (y1-y2)^2)
         return (Math.sqrt(Math.pow(a.latitude() - b.latitude(), 2)
                 + Math.pow(a.longitude() - b.longitude(), 2)));
     }
@@ -30,7 +31,8 @@ public class Utils2D {
      * @return result point after the move
      */
     public static Point movePoint(Point point, double distance, double angleDegrees) {
-
+        
+        // Uses basic trigonometry
         var radians = Math.toRadians(angleDegrees);
         var newLatitude = point.latitude() + distance * Math.sin(radians);
         var newLongitide = point.longitude() + distance * Math.cos(radians);
@@ -51,8 +53,10 @@ public class Utils2D {
 
         var intersect = false;
         var polygonPoints = polygon.coordinates().get(0);
-
+        
+        // Checks for Intersection between the line segment and any of the sides of a polygon
         for (int i = 0; i < polygonPoints.size(); i++) {
+
             intersect = Line2D.linesIntersect(start.latitude(), start.longitude(), 
                     end.latitude(), end.longitude(), 
                     polygonPoints.get(i).latitude(),polygonPoints.get(i).longitude(),

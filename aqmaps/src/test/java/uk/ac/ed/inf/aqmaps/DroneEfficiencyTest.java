@@ -22,7 +22,7 @@ public class DroneEfficiencyTest {
         for (String month : months) {
             for (String day : days) {
                 var startTime = System.nanoTime() / 1000000;
-                var drone = App.initiate(day, month, year, 55.9444, -3.1878, "80");
+                var drone = App.initiateDrone(day, month, year, 55.9444, -3.1878, "80");
                 var stopTime = System.nanoTime() / 1000000;
                 System.out.println(day + " " + month + " " + year + " Move count: "
                         + String.valueOf(drone.getMoveCount()));

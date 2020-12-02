@@ -6,7 +6,7 @@ import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Polygon;
 
 /**
- * A representation of a drone with purpose to visit and collect reading from sensors. 
+ * Represents a drone that visits and collects readings from sensors. 
  */
 public class Drone {
 
@@ -16,13 +16,13 @@ public class Drone {
     private static final double READING_RANGE = 0.0002;
     private static final double START_LOCATION_RANGE = 0.0001;
     private static final int DIRECTION_STEP = 10;
-    private static final ArrayList<Integer> ALLOWED_DIRECTIONS;
+    private static final ArrayList<Integer> ALLOWED_MOVE_DIRECTIONS;
     static {
-        ALLOWED_DIRECTIONS = new ArrayList<Integer>();
+        ALLOWED_MOVE_DIRECTIONS = new ArrayList<Integer>();
         var direction = 0;
 
         while (direction < 360) {
-            ALLOWED_DIRECTIONS.add(direction);
+            ALLOWED_MOVE_DIRECTIONS.add(direction);
             direction += DIRECTION_STEP;
         }
     }
@@ -88,10 +88,18 @@ public class Drone {
      * @return true if read is successful, false otherwise
      */
     private boolean readSensor(AirQualitySensor sensor) {
-
+        
+        // Check if this drone is in the reading range of the sensor
         if (Utils2D.distance(this.position, sensor.getLocationAsPoint()) < READING_RANGE) {
+            // Simulates obtaining the reading data by adding the sensor as a whole object together
+            // including the reading value inside to a list of visited sensors. Assumes the value
+            // was not accessible up to this point
             this.flightPathLog += "," + sensor.getLocation() + "\n";
             this.visitedSensors.add(sensor);
+            
+            if (!sensor.hasLowBattery()) {
+                sensor.getReading();
+            }
             return true;
         }
         return false;
@@ -106,10 +114,11 @@ public class Drone {
      */
     private boolean move(int direction) {
 
-        if (!ALLOWED_DIRECTIONS.contains(direction)) {
+        if (!ALLOWED_MOVE_DIRECTIONS.contains(direction)) {
             return false;
         }
         if (this.moveCount < MAX_MOVE_COUNT) {
+            // Commits to making the move, updates log and position
             this.moveCount += 1;
             this.flightPathLog += this.moveCount + "," + this.position.longitude() + ","
                     + this.position.latitude() + "," + direction;
@@ -138,6 +147,7 @@ public class Drone {
             if (!this.move(direction)) {
                 return false;
             }
+            // Only the last move of the path will reach a sensor
             if (i < path.getMoveDirections().size() - 1) {
                 this.flightPathLog += "," + null + "\n";
             }
@@ -156,7 +166,7 @@ public class Drone {
     private boolean moveToPoint(Point target, double range) {
 
         var path = Path.findPathToPoint(this.position, target, range, MOVE_LENGTH,
-                ALLOWED_DIRECTIONS, this.noFlyZones);
+                ALLOWED_MOVE_DIRECTIONS, this.noFlyZones);
         return this.move(path);
     }
 
@@ -167,7 +177,8 @@ public class Drone {
      * @return true if the sensor was reached and read, false otherwise
      */
     private boolean visitSensor(AirQualitySensor sensor) {
-
+        
+        // if the drone successfully moves to the sensor it can read it
         if (this.moveToPoint(sensor.getLocationAsPoint(), READING_RANGE)) {
             return this.readSensor(sensor);
         }
@@ -196,16 +207,22 @@ public class Drone {
     public void executeReadingRoutine() {
 
         var points = AirQualitySensor.toPoints(sensors);
+        // Adding the start position of the drone to the beginning of the list makes it the start
+        // of the visit route produced by Graph class
         points.add(0, this.position);
 
+        // Determine optimized order in which to visit the sensors based on their straight line
+        // distances
         var graph = new Graph(points);
         graph.toGreedyOrder();
         graph.swapOptimizeOrder(30);
         var visitOrder = graph.getVisitOrder();
-
+        
+        // Visit sensors in order determined by Graph class
         for (int i = 1; i < visitOrder.length; i++) {
             this.visitSensor(this.sensors.get(visitOrder[i] - 1));
         }
+        // Complete the cycle by returning back to starting area
         this.returnToStartPosition();
     }
 

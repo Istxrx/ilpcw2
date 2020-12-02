@@ -39,7 +39,7 @@ public class Path {
     }
 
     /**
-     * Assumes this is reference to start of the this and lists all move directions used in it
+     * Assumes this is reference to start of the path and lists all move directions used in it
      * onwards.
      * 
      * @return list of move directions that in this path
@@ -48,7 +48,8 @@ public class Path {
         
         var moveDirections = new ArrayList<Integer>();
         var path = this;
-
+        
+        // Loop through the path until we reach the end
         while (path.next != null) {
             path = path.next;
             moveDirections.add(path.cameFromDirection);
@@ -57,15 +58,16 @@ public class Path {
     }
 
     /**
-     * Assumes this is reference to start of the this and lists all points in it onwards.
+     * Assumes this is reference to start of the path and lists all points in it onwards.
      * 
-     * @return list of points that in this path
+     * @return list of points that are in this path
      */
     public ArrayList<Point> getPoints() {
         
         var points = new ArrayList<Point>();
         var path = this;
 
+        // Loop through the path until we reach the end
         while (true) {
             points.add(path.point);
             if (path.next != null) {
@@ -83,10 +85,29 @@ public class Path {
     public Point getStartPoint() {
         
         var path = this;
+        
+        // Loop through the path until we reach the start
         while (path.previous != null) {
             path = path.previous;
         }
         return path.point;
+    }
+
+    /**
+     * Reconstructs the path from end to start.
+     * 
+     * @return reference to the start of this path
+     */
+    private Path getStart() {
+        
+        var path = this;
+        
+        // Loop through the path until we reach the start
+        while (path.previous != null) {
+            path.previous.next = path;
+            path = path.previous;
+        }
+        return path;
     }
 
     /**
@@ -98,10 +119,13 @@ public class Path {
     public void addMove(Point end, int direction) {
         
         var path = this;
+        
+        // Loop through the path until we reach the end
         while (path.next != null) {
             path = path.next;
         }
-        var next = new Path(end, direction, 0, this, null);
+        // Insert the new end
+        var next = new Path(end, direction, 0, path, null);
         path.next = next;
     }
 
@@ -117,28 +141,13 @@ public class Path {
     }
 
     /**
-     * Reconstructs the path from end to start.
-     * 
-     * @return reference to the start of this path
-     */
-    private Path getStart() {
-        
-        var path = this;
-        while (path.previous != null) {
-            path.previous.next = path;
-            path = path.previous;
-        }
-        return path;
-    }
-
-    /**
      * Finds legal continuations of this path. Legal continuation can not cross obstacle and is
      * result of moving this point attribute by move length in a one of directions.
      * 
      * @param moveLength the length of each move in each path
      * @param directions the list of directions in degrees that will be explored
      * @param obstacles  the list of polygons that should not be crossed
-     * @return list of legal continuations
+     * @return list of legal continuations of this path
      */
     private ArrayList<Path> findBranches(double moveLength, ArrayList<Integer> directions,
             ArrayList<Polygon> obstacles) {
@@ -146,9 +155,13 @@ public class Path {
         var branches = new ArrayList<Path>();
         var start = this.point;
 
+        // Finds the end points resulting from moving the current point in the given directions by a
+        // given length
         for (Integer direction : directions) {
             var end = Utils2D.movePoint(start, moveLength, direction);
 
+            // If the line between start and end point intersects any of the obstacles, this
+            // continuation of the path is not involved in output
             if (!Utils2D.lineIntersectPolygons(start, end, obstacles)) {
                 var branch = new Path(end, direction, this.length + moveLength, this, null);
                 branches.add(branch);
@@ -173,6 +186,8 @@ public class Path {
     }
 
     /**
+     * Chooses the best path according to heuristic function
+     * 
      * @param paths  the paths to choose from
      * @param target the point that each path should lead to
      * @return path from the list that has the lowest (best) heuristic value
@@ -181,7 +196,8 @@ public class Path {
         
         var bestPath = paths.get(0);
         var bestHeuristicValue = bestPath.weightedHeuristicValue(target, EPSILON);
-
+        
+        // Finds the minimum heuristic value and corresponding path
         for (Path path : paths) {
             var heuristicValue = path.weightedHeuristicValue(target, EPSILON);
 
@@ -208,14 +224,20 @@ public class Path {
             ArrayList<Integer> directions, ArrayList<Polygon> obstacles) {
 
         var startingPath = new Path(start);
+        // The search space
         var paths = startingPath.findBranches(moveLength, directions, obstacles);
-
+        
+        // Terminates if there is no path left to explore = there is no path to target
         while (paths.size() > 0) {
+            // Choose the most promising path to reach the target 
             var path = chooseBestPath(paths, target);
 
+            // If the target is reached, returns the start of the path that it found
             if (Utils2D.distance(path.point, target) < range) {
                 return path.getStart();
             }
+            // The most promising path did not yet reach the target so it is expanded and its
+            // continuations are added to the search space
             paths.addAll(path.findBranches(moveLength, directions, obstacles));
             paths.remove(path);
         }

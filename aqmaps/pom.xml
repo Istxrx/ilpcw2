@@ -10,7 +10,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>heatmap</name>
+	<name>aqmaps</name>
 	<!-- FIXME change it to the project's website -->
 	<url>http://www.example.com</url>
 
@@ -75,7 +75,7 @@
 					<archive>
 						<index>true</index>
 						<manifest>
-							<mainClass>uk.ac.ed.inf.heatmap.App</mainClass>
+							<mainClass>uk.ac.ed.inf.aqmaps.App</mainClass>
 						</manifest>
 					</archive>
 				</configuration>

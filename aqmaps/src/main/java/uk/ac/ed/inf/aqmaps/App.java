@@ -12,6 +12,10 @@ import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Polygon;
 
+/**
+ * Provides functionality for obtaining data from server and producing output files. Also handles
+ * the preparation of data for a drone.
+ */
 public class App {
 
     // Constant bounds for values of latitudes and longitudes with respect to cardinal directions
@@ -20,6 +24,12 @@ public class App {
     private static final double BOUND_LONGITUDE_EAST = -3.184319;
     private static final double BOUND_LONGITUDE_WEST = -3.192473;
 
+    /**
+     * Connects to and copies the content of a URL address.
+     * 
+     * @param url an URL address of the server
+     * @return string representing the content of the address
+     */
     public static String readStringFromURL(String url) {
 
         // Create a new HttpClient with default settings.
@@ -36,10 +46,15 @@ public class App {
             e.printStackTrace();
             System.exit(1);
         }
-
         return null;
     }
 
+    /**
+     * Loads a list of polygons from a .geojson file on a server.
+     * 
+     * @param url an URL address of the server
+     * @return list of polygons obtained from the server
+     */
     private static ArrayList<Polygon> loadNoFlyZonesFromURL(String url) {
 
         var geoJsonString = readStringFromURL(url);
@@ -51,10 +66,15 @@ public class App {
             var geometry = feature.geometry();
             polygons.add((Polygon) geometry);
         }
-
         return polygons;
     }
-
+    
+    /**
+     * Creates and writes to a file in the current working directory.
+     * 
+     * @param fileName the name including extension of the file that is to be created
+     * @param content  the text that will be written to the file
+     */
     private static void createAndWriteFile(String fileName, String content) {
 
         try {
@@ -123,28 +143,46 @@ public class App {
         return null;
     }
     
-    public static Drone initiate(String day, String month, String year, double startLatitude, double startLongitude, String port) {
+    /**
+     * Loads data from server, puts it in the right format and forwards it to the drone.
+     * 
+     * @param day            the day for which the data is obtained from server
+     * @param month          the month for which the data is obtained from server
+     * @param year           the year for which the data is obtained from server
+     * @param startLatitude  the latitude of the starting point
+     * @param startLongitude the longitude of the starting point
+     * @param port           port the port at which the connection to server is established
+     * @return drone loaded with the data it need to complete the routine
+     */
+    // Should be done here since the drone does not handle loading data from server
+    public static Drone initiateDrone(String day, String month, String year, double startLatitude,
+            double startLongitude, String port) {
         
+        // The starting location of the drone
         var start = Point.fromLngLat(startLongitude, startLatitude);
-
+        
+        // Creates the confinement area as a polygon
         var boundPoints = new ArrayList<Point>();
         boundPoints.add(Point.fromLngLat(BOUND_LONGITUDE_WEST, BOUND_LATITUDE_NORTH));
         boundPoints.add(Point.fromLngLat(BOUND_LONGITUDE_EAST, BOUND_LATITUDE_NORTH));
         boundPoints.add(Point.fromLngLat(BOUND_LONGITUDE_EAST, BOUND_LATITUDE_SOUTH));
         boundPoints.add(Point.fromLngLat(BOUND_LONGITUDE_WEST, BOUND_LATITUDE_SOUTH));
         var confinementArea = (Polygon.fromLngLats(List.of(boundPoints)));
-
+        
+        // Loads the no fly zones from server
         var noFlyZonesUrl = "http://localhost:" + port + "/buildings/no-fly-zones.geojson";
         var noflyZones = loadNoFlyZonesFromURL(noFlyZonesUrl);
+        
+        // The drone will never cross the borders of any polygon in no-fly zones, if started inside,
+        // it will never leave the polygon
+        noflyZones.add(confinementArea);
 
         var sensorsUrl = "http://localhost:" + port + "/maps/" + year + "/" + month + "/" + day
                 + "/air-quality-data.json";
         var sensors = AirQualitySensor.loadListFromURL(sensorsUrl, port);
-
-        noflyZones.add(confinementArea);
-
+        
+        // Pass the data to the drone
         var drone = new Drone(start, noflyZones, sensors);
-        drone.executeReadingRoutine();;
 
         return drone;
     }
@@ -155,46 +193,31 @@ public class App {
         var year = args[2];
         var startLatitude = Double.parseDouble(args[3]);
         var startLongitude = Double.parseDouble(args[4]);
-        var seed = args[5];
+        // var seed = args[5];
         var port = args[6];
-
-        var start = Point.fromLngLat(startLongitude, startLatitude);
-
-        var boundPoints = new ArrayList<Point>();
-        boundPoints.add(Point.fromLngLat(BOUND_LONGITUDE_WEST, BOUND_LATITUDE_NORTH));
-        boundPoints.add(Point.fromLngLat(BOUND_LONGITUDE_EAST, BOUND_LATITUDE_NORTH));
-        boundPoints.add(Point.fromLngLat(BOUND_LONGITUDE_EAST, BOUND_LATITUDE_SOUTH));
-        boundPoints.add(Point.fromLngLat(BOUND_LONGITUDE_WEST, BOUND_LATITUDE_SOUTH));
-        var confinementArea = (Polygon.fromLngLats(List.of(boundPoints)));
-
-        var noFlyZonesUrl = "http://localhost:" + port + "/buildings/no-fly-zones.geojson";
-        var noflyZones = loadNoFlyZonesFromURL(noFlyZonesUrl);
-
-        var sensorsUrl = "http://localhost:" + port + "/maps/" + year + "/" + month + "/" + day
-                + "/air-quality-data.json";
-        var sensors = AirQualitySensor.loadListFromURL(sensorsUrl, port);
-
         /*
          * var features = new ArrayList<Feature>();
          * 
          * for (Polygon p : nfz) { var feature = Feature.fromGeometry((Geometry) p);
          * feature.addStringProperty("fill", "#ff0000");; features.add(feature); }
          */
-        noflyZones.add(confinementArea);
-
-        var drone = new Drone(start, noflyZones, sensors);
+        
+        // Initializes and feeds data to the drone
+        var drone = initiateDrone(day, month, year, startLatitude, startLongitude, port);
+        // Starts the routine
         drone.executeReadingRoutine();
-
+        System.out.println("Finished routine on " + day + "/" + month + "/" + year + " with "
+                + drone.getMoveCount() + " moves");
+        
+        // Creates the flight path log output file
         var flightPathLog = drone.getFlightPathLog();
         var fileName = "flightpath-" + day + "-" + month + "-" + year + ".txt";
         createAndWriteFile(fileName, flightPathLog);
-        System.out.println("Finished routine on " + day + "/" + month + "/" + year + " with "
-                + drone.getMoveCount() + " moves");
-
+        
+        // Creates a visualization of flight path and sensor readings as a geojson file
         var feature = drone.getFlightPathAsFeature();
         var features = drone.getReadingsAsFeatures();
         features.add(feature);
-
         var featureCollection = FeatureCollection.fromFeatures(features);
         var jsonString = featureCollection.toJson();
         fileName = "readings-" + day + "-" + month + "-" + year + ".geojson";

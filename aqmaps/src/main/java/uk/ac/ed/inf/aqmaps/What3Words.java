@@ -5,7 +5,7 @@ import com.mapbox.geojson.Point;
 
 /**
  * Represents a unique combinations of 3 words that uniquely identify a locations with a resolution
- * of three meters anywhere in the world
+ * of three meters anywhere in the world.
  */
 public class What3Words {
 

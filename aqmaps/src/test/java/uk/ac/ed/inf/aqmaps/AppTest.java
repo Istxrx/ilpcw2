@@ -5,7 +5,7 @@ import java.util.List;
 
 public class AppTest {
     
-    private static void appTime (String day, String month, String year) {
+    public static void appTime (String day, String month, String year) {
 
         var args = new String[] {day, month, year, "55.944425", "-3.188396", "5678", "80"};
         
@@ -15,7 +15,7 @@ public class AppTest {
         System.out.println(stopTime - startTime + " miliseconds");
     }
     
-    private static void runOn12Days() {
+    public static void runOn12Days() {
         var daysAndMonths = new ArrayList<String>(
                 List.of("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"));
 

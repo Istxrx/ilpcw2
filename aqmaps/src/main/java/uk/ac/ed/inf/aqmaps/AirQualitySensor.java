@@ -8,7 +8,7 @@ import com.mapbox.geojson.Geometry;
 import com.mapbox.geojson.Point;
 
 /**
- * A representation of a sensor which monitors the quality of the air.
+ * Represents a sensor which monitors the quality of the air.
  */
 public class AirQualitySensor {
 
@@ -56,15 +56,18 @@ public class AirQualitySensor {
         
         if (visited) {
             if (!this.hasLowBattery()) {
+                // Battery is OK, visualize the reading
                 feature.addStringProperty("rgb-string", App.pollutionColor(this.getReading()));
                 feature.addStringProperty("marker-color", App.pollutionColor(this.getReading()));
                 feature.addStringProperty("marker-symbol", App.pollutionSymbol(this.getReading()));
             } else {
+                // Battery is low
                 feature.addStringProperty("rgb-string", "#000000");
                 feature.addStringProperty("marker-color", "#000000");
                 feature.addStringProperty("marker-symbol", "cross");
             }
         } else {
+            // Sensor is not visited
             feature.addStringProperty("rgb-string", "#aaaaaa");
             feature.addStringProperty("marker-color", "#aaaaaa");
         }
@@ -93,7 +96,9 @@ public class AirQualitySensor {
      * @return list of sensors obtained from the server
      */
     public static ArrayList<AirQualitySensor> loadListFromURL(String url, String port) {
-
+        
+        // Uses the custom deserializer for location field which loads a What3Words object for
+        // each sensor
         var gson = new GsonBuilder()
                 .registerTypeAdapter(What3Words.class, new W3WDeserializer(port)).create();
         var jsonString = App.readStringFromURL(url);

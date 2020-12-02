@@ -26,6 +26,7 @@ public class Graph {
         this.distanceMatrix = new double[nodes.size()][nodes.size()];
         this.visitOrder = new int[nodes.size()];
 
+        // Computes the distances between each pair of nodes and records them in the distance matrix
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = 0; j < nodes.size(); j++) {
                 this.distanceMatrix[i][j] = Utils2D.distance(nodes.get(i), nodes.get(j));
@@ -51,11 +52,14 @@ public class Graph {
             var current = visitOrder[i - 1];
             var nearest = visitOrder[i];
             var minDistance = this.distanceMatrix[current][nearest];
-
+            
+            // Finds the unvisited node with minimum distance to the current node
             for (int j = i + 1; j < this.distanceMatrix.length; j++) {
                 var candidate = visitOrder[j];
                 var distance = this.distanceMatrix[current][candidate];
                 
+                // If a candidate node with lower distance is found than previously assumed nearest
+                // node, the 2 are swapped in the visit order
                 if (distance < minDistance) {
                     minDistance = distance;
                     nearest = candidate;
@@ -94,9 +98,12 @@ public class Graph {
         var optimized = true;
         int count = 0;
         
+        // If there was no optimization made in the last iteration there is no point in attempting
+        // it again
         while (count < numberOfTries && optimized) {
             optimized = false;
             
+            // The first node should never be moved
             for (int i = 1; i < this.visitOrder.length - 1; i++) {
                 for (int j = i + 1; j < this.visitOrder.length; j++) {
 
@@ -105,12 +112,15 @@ public class Graph {
                     var endNode = this.visitOrder[j];
                     var nextToEndNode = this.visitOrder[(j + 1) % this.visitOrder.length];
 
+                    // The only change in path length after reversing a part of the path is the
+                    // change in distances at bordering points where the reversing occurred
                     var currentDistances = this.distanceMatrix[previousToStartNode][startNode]
                             + this.distanceMatrix[endNode][nextToEndNode];
                     var swappedDistances = this.distanceMatrix[previousToStartNode][endNode]
                             + this.distanceMatrix[startNode][nextToEndNode];
-
+                    
                     if (swappedDistances < currentDistances) {
+                        // The reversing reduces the overall path length, apply it
                         this.reversePartOfVisitOrder(i, j);
                         optimized = true;
                     }
