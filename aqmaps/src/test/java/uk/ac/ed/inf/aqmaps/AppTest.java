@@ -3,6 +3,7 @@ package uk.ac.ed.inf.aqmaps;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class AppTest {
     
     public static void appTime (String day, String month, String year) {
@@ -26,10 +27,12 @@ public class AppTest {
         }
     }
     
+
+    
     public static void main(String[] args) {
         
         //runOn12Days();
-        appTime("18", "08", "2020");
+        appTime("18", "08", "2021");
 
     }
 }

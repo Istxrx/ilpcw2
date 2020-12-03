@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.io.File;
 import java.io.FileWriter;
+
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Polygon;
@@ -162,7 +163,7 @@ public class App {
         // The starting location of the drone
         var start = Point.fromLngLat(startLongitude, startLatitude);
         
-        // Creates the confinement area as a polygon
+        // Creates the confinement area polygon
         var boundPoints = new ArrayList<Point>();
         boundPoints.add(Point.fromLngLat(BOUND_LONGITUDE_WEST, BOUND_LATITUDE_NORTH));
         boundPoints.add(Point.fromLngLat(BOUND_LONGITUDE_EAST, BOUND_LATITUDE_NORTH));
@@ -196,12 +197,6 @@ public class App {
         var startLongitude = Double.parseDouble(args[4]);
         // var seed = args[5];
         var port = args[6];
-        /*
-         * var features = new ArrayList<Feature>();
-         * 
-         * for (Polygon p : nfz) { var feature = Feature.fromGeometry((Geometry) p);
-         * feature.addStringProperty("fill", "#ff0000");; features.add(feature); }
-         */
         
         // Initializes and feeds data to the drone
         var drone = initiateDrone(day, month, year, startLatitude, startLongitude, port);
