@@ -53,6 +53,7 @@ public class AirQualitySensor {
     public Feature toFeature(boolean visited) {
         
         var feature = Feature.fromGeometry((Geometry) this.getLocationAsPoint());
+        feature.addStringProperty("location", this.getLocation());
         
         if (visited) {
             if (!this.hasLowBattery()) {

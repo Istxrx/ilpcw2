@@ -18,7 +18,7 @@ public class Path {
     private static final double EPSILON = 2.0;
     
     private Point point;
-    private Integer cameFromDirection;
+    private Integer usedDirection;
     private double length;
 
     private Path previous;
@@ -28,7 +28,7 @@ public class Path {
             Path next) {
 
         this.point = point;
-        this.cameFromDirection = moveDirection;
+        this.usedDirection = moveDirection;
         this.length = length;
         this.previous = previous;
         this.next = next;
@@ -52,7 +52,7 @@ public class Path {
         // Loop through the path until we reach the end
         while (path.next != null) {
             path = path.next;
-            moveDirections.add(path.cameFromDirection);
+            moveDirections.add(path.usedDirection);
         }
         return moveDirections;
     }

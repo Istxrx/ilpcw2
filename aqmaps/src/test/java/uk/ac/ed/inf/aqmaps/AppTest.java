@@ -29,7 +29,7 @@ public class AppTest {
     public static void main(String[] args) {
         
         //runOn12Days();
-        appTime("05", "05", "2021");
+        appTime("18", "08", "2020");
 
     }
 }

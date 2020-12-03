@@ -13,8 +13,9 @@ import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Polygon;
 
 /**
- * Provides functionality for obtaining data from server and producing output files. Also handles
- * the preparation of data for a drone.
+ * Provides functionality for obtaining data from server and producing output files as well as some
+ * utility functions for visualization of the data collected by the drone. Also handles the
+ * preparation of data for a drone.
  */
 public class App {
 
@@ -55,7 +56,7 @@ public class App {
      * @param url an URL address of the server
      * @return list of polygons obtained from the server
      */
-    private static ArrayList<Polygon> loadNoFlyZonesFromURL(String url) {
+    private static ArrayList<Polygon> loadPolygonsFromURL(String url) {
 
         var geoJsonString = readStringFromURL(url);
         var featureCollection = FeatureCollection.fromJson(geoJsonString);
@@ -152,9 +153,9 @@ public class App {
      * @param startLatitude  the latitude of the starting point
      * @param startLongitude the longitude of the starting point
      * @param port           port the port at which the connection to server is established
-     * @return drone loaded with the data it need to complete the routine
+     * @return drone loaded with the data it needs to complete the routine
      */
-    // Should be done here since the drone does not handle loading data from server
+    // Should be done here since the Drone class does not handle loading data from server
     public static Drone initiateDrone(String day, String month, String year, double startLatitude,
             double startLongitude, String port) {
         
@@ -171,7 +172,7 @@ public class App {
         
         // Loads the no fly zones from server
         var noFlyZonesUrl = "http://localhost:" + port + "/buildings/no-fly-zones.geojson";
-        var noflyZones = loadNoFlyZonesFromURL(noFlyZonesUrl);
+        var noflyZones = loadPolygonsFromURL(noFlyZonesUrl);
         
         // The drone will never cross the borders of any polygon in no-fly zones, if started inside,
         // it will never leave the polygon

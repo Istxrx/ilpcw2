@@ -49,7 +49,7 @@ public class Utils2D {
      * @param polygon the polygon that is checked for intersection
      * @return true if the line segment intersects the polygon, false otherwise
      */
-    public static boolean lineIntersectPolygon(Point start, Point end, Polygon polygon) {
+    private static boolean lineIntersectPolygon(Point start, Point end, Polygon polygon) {
 
         var intersect = false;
         var polygonPoints = polygon.coordinates().get(0);

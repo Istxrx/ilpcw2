@@ -31,6 +31,7 @@ public class Graph {
             for (int j = 0; j < nodes.size(); j++) {
                 this.distanceMatrix[i][j] = Utils2D.distance(nodes.get(i), nodes.get(j));
             }
+            // The visit order is initially the same as the order of points in input
             this.visitOrder[i] = i;
         }
     }
